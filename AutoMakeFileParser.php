@@ -266,8 +266,6 @@ class AutoMakeFileParser
 					];
 					// 替换模版中的名称及相关信息
 					$finalContents = $this->replaceStubTags($stubPath, $replaceArr);
-					// @todo 根据相关联的表
-					dd($finalContents);
 
 					// 判断文件夹是否存在，不存在则创建文件夹
 					if(!is_dir($needMakeDir)){
@@ -301,9 +299,19 @@ class AutoMakeFileParser
 			return false;
 		}
 		$fileContents = file_get_contents($filePath);
-		return str_replace(
+		$baseReplace = str_replace(
 			array_keys($replaceArr), array_values($replaceArr), $fileContents
 		);
+		$replaceRst = $this->getTableEachFieldParse()->replaceTableEach($this->makeType, $baseReplace);
+		return $replaceRst;
+	}
+
+	/**
+	 * @return \Illuminate\Foundation\Application|\App\Helpers\LAM\TableEachFieldParser
+	 */
+	protected function getTableEachFieldParse()
+	{
+		return app('App\Helpers\LAM\TableEachFieldParser');
 	}
 
 	/**

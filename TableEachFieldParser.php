@@ -14,16 +14,20 @@ class TableEachFieldParser {
 	/**
 	 * 模版中循环语句替换对应的数据
 	 * @example
-	DummyTBForeach
-	 * if (Request::has('DummyTable.DTableFiled')) {
-	 * $query = $query->where('DummyTable.DTableFiled', '=', Request::input('DTableFiled'));
-	 * }
+	 * DummyTBForeach
+	 *    if (Request::has('DummyTable.DTableFiled')) {
+	 *        $query = $query->where('DummyTable.DTableFiled', '=', Request::input('DTableFiled'));
+	 *    }
 	 * EndDummyTBForeach
-	 * @param $dummyTableName
+	 * @param $makeType
+	 * @param $replacedIntro
 	 * @return string
 	 */
-	public function replaceTableEach($dummyTableName)
+	public function replaceTableEach($makeType, $replacedIntro)
 	{
+		$pa = '/DummyTBForeach.*?EndDummyTBForeach/s';
+		preg_match_all($pa,$replacedIntro,$match);
+		dd($match);
 		// 表中的所有字段
 		$tableFileds = [];
 		// 获取DummyTBForeach区间的内容模版
