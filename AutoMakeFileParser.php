@@ -1,14 +1,12 @@
-<?php namespace App\Helpers;
+<?php namespace App\Helpers\LAM;
 
 use Artisan;
-use EasyWeChat\Core\Exception;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 /**
  * Class     AutoMakeFileParser
  *
  * @package  App\Helpers
- * @author   Vicleos <510331882@qq.com>
+ * @author   Vicleos <510331882@qq.com> https://github.com/taoismCoder/LAM
  */
 class AutoMakeFileParser
 {
