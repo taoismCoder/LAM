@@ -1,0 +1,59 @@
+<?php
+
+namespace DummyNamespace;
+
+use Request;
+use Event;
+use Carbon\Carbon;
+use DummyModelNamespace;
+use Prettus\Repository\Eloquent\BaseRepository;
+
+/**
+ * Class RaiseOrderRepository
+ * @package DummyNamespace
+ */
+class DummyClassName extends BaseRepository
+{
+    /**
+     * 模型
+     * @return string
+     */
+    public function model()
+    {
+        return DummyModelName::class;
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    public function filter()
+    {
+        $query = $this->model;
+    DummyTBForeach
+        if (Request::has('DummyTable.DTableFiled')) {
+            $query = $query->where('DummyTable.DTableFiled', '=', Request::input('DTableFiled'));
+        }
+    EndDummyTBForeach
+        if (Request::has('DummyTable.created_at')) {
+            $arrTime = explode('|', Request::input('DummyTable.created_at'));
+            if (count($arrTime) == 2) {
+                $startTime = strtotime($arrTime[0]);
+                $endTime = strtotime($arrTime[1] . ' 23:59:59');
+                $query = $query->where('DummyTable.created_at', '>', $startTime)->where('DummyTable.created_at', '<', $endTime);
+            }
+        }
+
+        return $query;
+    }
+
+	/**
+	 * 根据ID获取记录
+	 * @param $DummyTablePk
+	 * @return mixed
+	 */
+    public function getById($DummyTablePk)
+    {
+		return $this->model->where('DummyTablePk', '=', $raiseOrderId)->first();
+    }
+    DummyResMore
+}

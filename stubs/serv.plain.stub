@@ -1,0 +1,16 @@
+<?php
+
+namespace DummyNamespace;
+
+class DummyClass
+{
+
+    /**
+     * DummyUsePath constructor.
+     */
+    public function __construct()
+    {
+    }
+
+    DummyMore
+}
