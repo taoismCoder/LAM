@@ -20,13 +20,13 @@
 * 其它分支：根据开发需要，大的版本会以版本号为分支名，打一些临时分支。
 
 ### 最新Release
-* [Release](https://github.com/vicleos/LaravelAutoMake/releases)
+* [Release](https://github.com/taoismCoder/LAM/releases)
 
 ### 其它LINKS
-* 我想查找详细的文档资料 => [文档/手册](https://github.com/vicleos/LaravelAutoMake/wiki)
-* [如何使用LAM](https://github.com/vicleos/LaravelAutoMake/wiki/LAM%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C)
-* [LAM开发实例](https://github.com/vicleos/LaravelAutoMake/wiki/LAM_Example)
-* 我要反馈问题 => [Issues](https://github.com/vicleos/LaravelAutoMake/issues)
+* 我想查找详细的文档资料 => [文档/手册](https://github.com/taoismCoder/LAM/wiki)
+* [如何使用LAM](https://github.com/taoismCoder/LAM/wiki/LAM%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C)
+* [LAM开发实例](https://github.com/taoismCoder/LAM/wiki/LAM_Example)
+* 我要反馈问题 => [Issues](https://github.com/taoismCoder/LAM/issues)
  
 ## About
 
@@ -36,12 +36,8 @@
 
 ## Contact
 
-    @问题反馈   https://github.com/vicleos/LaravelAutoMake/issues (推荐)
+    @问题反馈   https://github.com/taoismCoder/LAM/issues (推荐)
     
 ## Contributors List 贡献者
 
-[Contributors Details](https://github.com/vicleos/LaravelAutoMake/graphs/contributors)
-
-## LAM的客户
-
-- 您也在使用LAM?请 [在这里](https://github.com/vicleos/LaravelAutoMake/issues/1) 更新您的公司.
+[Contributors Details](https://github.com/taoismCoder/LAM/graphs/contributors)
