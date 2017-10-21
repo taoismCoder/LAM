@@ -42,6 +42,6 @@
 
 [Contributors Details](https://github.com/vicleos/LaravelAutoMake/graphs/contributors)
 
-## LAM的客户
+## LAM的客户a
 
 您也在使用LAM?请 [在这里](https://github.com/vicleos/LaravelAutoMake/issues/1) 更新您的公司.
