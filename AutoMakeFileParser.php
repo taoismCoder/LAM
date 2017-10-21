@@ -2,10 +2,11 @@
 
 use Artisan;
 use Illuminate\Support\Str;
+use App\Helpers\LAM\TableEachFieldParser;
 /**
  * Class     AutoMakeFileParser
  *
- * @package  App\Helpers
+ * @package  App\Helpers\LAM
  * @author   Vicleos <510331882@qq.com> https://github.com/taoismCoder/LAM
  */
 class AutoMakeFileParser
@@ -20,6 +21,12 @@ class AutoMakeFileParser
 	 * @var array
 	 */
 	protected $parsed = [];
+
+	/**
+	 * 要生成的文件类型
+	 * @var string
+	 */
+	protected $makeType = '';
 
 	/**
 	 * 匹配类型为 explode
@@ -44,6 +51,9 @@ class AutoMakeFileParser
 	 */
 	public function parse($raw)
 	{
+		// 重置生成类型
+		$this->setMakeType('');
+
 		$parsed = [];
 		list($headings, $data) = $this->parseRawData($raw);
 
@@ -89,6 +99,7 @@ class AutoMakeFileParser
 
 	public function makeSingleFile($type, $intro)
 	{
+		$this->setMakeType($type);
 		if($type == 'route'){
 			return $this->makeRoute($intro);
 		}
@@ -97,7 +108,7 @@ class AutoMakeFileParser
 			return $this->makeService($intro);
 		}
 
-		if($type == 'srv'){
+		if($type == 'res'){
 			return $this->makeRepository($intro);
 		}
 	}
@@ -106,6 +117,44 @@ class AutoMakeFileParser
 	 |  Other Functions
 	 | ------------------------------------------------------------------------------------------------
 	 */
+
+	/**
+	 * 要生成的文件类型
+	 * @param $type
+	 */
+	protected function setMakeType($type)
+	{
+		$this->makeType = $type;
+	}
+
+	/**
+	 * 要生成的文件类型
+	 * @param string $type
+	 * @return string
+	 */
+	protected function getMakeType($type = '')
+	{
+		$rst = '';
+		$type = $type ?: $this->makeType;
+		switch ($type){
+			case 'route':
+				$rst = 'Route';
+				break;
+			case 'ctrl':
+				$rst = 'Controller';
+				break;
+			case 'res':
+				$rst = 'Repository';
+				break;
+			case 'table':
+				$rst = 'Table';
+				break;
+			case 'model':
+				$rst = 'Model';
+				break;
+		};
+		return $rst;
+	}
 
 	/**
 	 * 生成路由及控制器
@@ -139,8 +188,8 @@ class AutoMakeFileParser
 	private function makeService($intro)
 	{
 		$type = 'serv';
-		$needMakeControllers = $intro;
-		foreach ($needMakeControllers as $filePathName){
+		$needMakeFiles = $intro;
+		foreach ($needMakeFiles as $filePathName){
 			// 判断文件是否存在，其中包含根据服务名称获取要生成的文件路径
 			$fileIsExists = $this->alreadyExists($filePathName, $type);
 
@@ -183,6 +232,64 @@ class AutoMakeFileParser
 	}
 
 	/**
+	 * 生成仓库类
+	 * @param $intro
+	 * @return bool
+	 */
+	protected function makeRepository($intro)
+	{
+		$type = $this->makeType;
+		$needMakeFiles = $intro;
+		foreach ($needMakeFiles as $filePathName){
+			// 判断文件是否存在，其中包含根据服务名称获取要生成的文件路径
+			$fileIsExists = $this->alreadyExists($filePathName, $type);
+			if(!$fileIsExists){
+				// 获取 Repository 生成模版
+				$stubPath = $this->getStub($type);
+				if (file_exists($stubPath)){
+					// 根据服务名称获取需要生成的文件路径
+					$needMakeFilePath = $this->getNeedMakeFilePath($filePathName, $type);
+					// 需要创建的文件夹路径
+					$needMakeDir = str_replace(class_basename($filePathName).'.php', '', $needMakeFilePath);
+					// 类名
+					$baseClassName = class_basename($filePathName);
+					// 当前文件完整的类名
+					$dummyClassName = $baseClassName.$this->getMakeType();
+					// 需要替换的 tag 及对应的值
+					$replaceArr = [
+						'DummyNamespace' => $this->getFileNamespace($filePathName),
+						'DummyClassName' => $dummyClassName,
+						'DummyUsePath' => $this->getFileNamespace($filePathName).'\\'.$dummyClassName,
+						'DummyModelName' => $baseClassName,
+						'DummyModelUsePath' => $this->getFileNamespace($filePathName, 'model').'\\'.$baseClassName,
+						'DummyMore' => ''
+					];
+					// 替换模版中的名称及相关信息
+					$finalContents = $this->replaceStubTags($stubPath, $replaceArr);
+					// @todo 根据相关联的表
+					dd($finalContents);
+
+					// 判断文件夹是否存在，不存在则创建文件夹
+					if(!is_dir($needMakeDir)){
+						mkdir($needMakeDir, 0755, true);
+					}
+					// 输出文件
+					$this->put($needMakeFilePath, $finalContents);
+					echo $needMakeFilePath.' 执行完毕<br/>';
+				}else{
+					echo $filePathName.' 模板不存在<br/>';
+					return false;
+				}
+			}else{
+				echo $filePathName.' 文件已存在<br/>';
+				return false;
+			}
+
+		}
+		return true;
+	}
+
+	/**
 	 * 替换模版中的标签
 	 * @param $filePath
 	 * @param $replaceArr
@@ -202,12 +309,14 @@ class AutoMakeFileParser
 	/**
 	 * 获取文件的命名空间
 	 * @param $rawFileName
+	 * @param string $type
 	 * @return string
 	 */
-	protected function getFileNamespace($rawFileName)
+	protected function getFileNamespace($rawFileName, $type = '')
 	{
 		$rootNamespace = trim(app()->getNamespace(), '\\');
-		$serviceRootNamespace = $this->getServiceNamespace($rootNamespace);
+		$targetNamespace = 'get'.$this->getMakeType($type).'Namespace';
+		$serviceRootNamespace = $this->$targetNamespace($rootNamespace);
 		return $serviceRootNamespace.'\\'.str_replace('/'.class_basename($rawFileName), '', $rawFileName);
 	}
 
@@ -325,6 +434,17 @@ class AutoMakeFileParser
 	protected function getServiceNamespace($rootNamespace)
 	{
 		return $rootNamespace.'\Service';
+	}
+
+	/**
+	 * Get the Model namespace for the class.
+	 *
+	 * @param  string  $rootNamespace
+	 * @return string
+	 */
+	protected function getModelNamespace($rootNamespace)
+	{
+		return $rootNamespace.'\Models';
 	}
 
 	/**

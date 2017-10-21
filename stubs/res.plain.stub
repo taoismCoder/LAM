@@ -5,11 +5,11 @@ namespace DummyNamespace;
 use Request;
 use Event;
 use Carbon\Carbon;
-use DummyModelNamespace;
+use DummyModelUsePath;
 use Prettus\Repository\Eloquent\BaseRepository;
 
 /**
- * Class RaiseOrderRepository
+ * Class DummyUsePath
  * @package DummyNamespace
  */
 class DummyClassName extends BaseRepository
@@ -53,7 +53,7 @@ class DummyClassName extends BaseRepository
 	 */
     public function getById($DummyTablePk)
     {
-		return $this->model->where('DummyTablePk', '=', $raiseOrderId)->first();
+		return $this->model->where('DummyTablePk', '=', $DummyTablePk)->first();
     }
-    DummyResMore
+    DummyMore
 }
