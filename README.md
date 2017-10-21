@@ -21,11 +21,11 @@
 
 ### 最新Release
 * [Release](https://github.com/vicleos/LaravelAutoMake/releases)
-* [如何使用LAM](https://github.com/vicleos/LaravelAutoMake/wiki/LAM%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C)
-* [LAM开发实例](https://github.com/vicleos/LaravelAutoMake/wiki/LAM_Example)
 
 ### 其它LINKS
 * 我想查找详细的文档资料 => [Wiki/Documents/Manual 文档/手册](https://github.com/vicleos/LaravelAutoMake/wiki)
+* 如何使用LAM(https://github.com/vicleos/LaravelAutoMake/wiki/LAM%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C)
+* LAM开发实例(https://github.com/vicleos/LaravelAutoMake/wiki/LAM_Example)
 * 我要反馈问题 => [Issues](https://github.com/vicleos/LaravelAutoMake/issues)
  
 ## About
