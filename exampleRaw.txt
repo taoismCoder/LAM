@@ -3,16 +3,19 @@
 -srv-
 	Some/SomeService,
 -res-
-	Erp/Commodity,
+	Erp/Product,
+-model-
+	Erp/Product,
 -table-
-=>table_one:
-    ->table_one_id
-    ->table_one_name
-    ->created_at
-    ->updated_at
+=>Erp/Product|table_one|comment:'产品表':
+    ->product_id|comment:'主键ID',pk:1
+    ->name|comment:'产品名称',type:string@128,default:''
+    ->created_at|comment:'创建时间',type:int,default:0
+    ->updated_at|comment:'更新时间',type:int,default:0
+    ->deleted_at|comment:'删除时间',type:int,default:0
 =>table_two:
-    ->table_two_id
-    ->table_two_name
-    ->status
-    ->created_at
-    ->updated_at
+    ->table_two_id|comment:'主键ID',pk:1
+    ->table_two_name|comment:'表2字段名称',type:string@128,default:''
+    ->status|comment:'状态',type:tinyInt,default:0
+    ->created_at|comment:'创建时间',type:int,default:0
+    ->updated_at|comment:'更新时间',type:int,default:0
