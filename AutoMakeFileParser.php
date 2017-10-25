@@ -38,6 +38,12 @@ class AutoMakeFileParser
 	 */
 	const TYPE_PREG = 'preg';
 
+	/**
+	 * 表与关联的模型的数据
+	 * @var array
+	 */
+	protected $modelTableRelation = [];
+
 	/* ------------------------------------------------------------------------------------------------
 	 |  Main Functions
 	 | ------------------------------------------------------------------------------------------------
@@ -47,7 +53,7 @@ class AutoMakeFileParser
 	 *
 	 * @param  string  $raw
 	 *
-	 * @return mixed
+	 * @return AutoMakeFileParser|array
 	 */
 	public function parse($raw)
 	{
@@ -60,7 +66,6 @@ class AutoMakeFileParser
 		if ( ! is_array($headings)) {
 			return $parsed;
 		}
-
 		foreach ($headings as $key => $heading) {
 
 			$parsed[] = [
@@ -100,11 +105,12 @@ class AutoMakeFileParser
 	public function makeSingleFile($type, $intro)
 	{
 		$this->setMakeType($type);
+
 		if($type == 'route'){
 			return $this->makeRoute($intro);
 		}
 
-		if($type == 'srv'){
+		if($type == 'serv'){
 			return $this->makeService($intro);
 		}
 
@@ -142,6 +148,9 @@ class AutoMakeFileParser
 				break;
 			case 'ctrl':
 				$rst = 'Controller';
+				break;
+			case 'serv':
+				$rst = 'Service';
 				break;
 			case 'res':
 				$rst = 'Repository';
@@ -210,7 +219,6 @@ class AutoMakeFileParser
 					];
 					// 替换模版中的名称及相关信息
 					$finalContents = $this->replaceStubTags($stubPath, $replaceArr);
-
 					// 判断文件夹是否存在，不存在则创建文件夹
 					if(!is_dir($needMakeDir)){
 						mkdir($needMakeDir, 0755, true);
@@ -250,7 +258,7 @@ class AutoMakeFileParser
 					// 根据服务名称获取需要生成的文件路径
 					$needMakeFilePath = $this->getNeedMakeFilePath($filePathName, $type);
 					// 需要创建的文件夹路径
-					$needMakeDir = str_replace(class_basename($filePathName).'.php', '', $needMakeFilePath);
+					$needMakeDir = str_replace(class_basename($filePathName).'Repository.php', '', $needMakeFilePath);
 					// 类名
 					$baseClassName = class_basename($filePathName);
 					// 当前文件完整的类名
@@ -302,8 +310,11 @@ class AutoMakeFileParser
 		$baseReplace = str_replace(
 			array_keys($replaceArr), array_values($replaceArr), $fileContents
 		);
-		$replaceRst = $this->getTableEachFieldParse()->replaceTableEach($this->makeType, $baseReplace);
-		return $replaceRst;
+		if($this->makeType == 'res' || $this->makeType == 'model'){
+			$baseReplace = $this->getTableEachFieldParse()->replaceTableEach($this->makeType, $baseReplace);
+		}
+
+		return $baseReplace;
 	}
 
 	/**
@@ -322,6 +333,7 @@ class AutoMakeFileParser
 	 */
 	protected function getFileNamespace($rawFileName, $type = '')
 	{
+		if(empty($type)) $type = $this->makeType;
 		$rootNamespace = trim(app()->getNamespace(), '\\');
 		$targetNamespace = 'get'.$this->getMakeType($type).'Namespace';
 		$serviceRootNamespace = $this->$targetNamespace($rootNamespace);
@@ -385,7 +397,6 @@ class AutoMakeFileParser
 	protected function parseName($name, $type)
 	{
 		$rootNamespace = app()->getNamespace();
-
 		if (Str::startsWith($name, $rootNamespace)) {
 			return $name;
 		}
@@ -408,7 +419,7 @@ class AutoMakeFileParser
 				break;
 		}
 
-		return $this->parseName($rootNamespace.'\\'.$name, $type);
+		return $this->parseName($rootNamespace.'\\'.$name.'Repository', $type);
 	}
 
 	/**
@@ -498,8 +509,8 @@ class AutoMakeFileParser
 			case 'res':
 				return self::parseResIntro($introRaw);
 				break;
-			case 'srv':
-				return self::parseSevIntro($introRaw);
+			case 'serv':
+				return self::parseServIntro($introRaw);
 				break;
 			case 'table':
 				return self::parseTableIntro($introRaw);
@@ -577,7 +588,7 @@ class AutoMakeFileParser
 	 * @param $introRaw
 	 * @return array
 	 */
-	private function parseSevIntro($introRaw)
+	private function parseServIntro($introRaw)
 	{
 		$rst = array_filter($this->pregRaw(self::TYPE_EXPLODE, ',', $introRaw));
 		return $rst;
@@ -593,18 +604,60 @@ class AutoMakeFileParser
 		$rst = [];
 		$baseParse = array_filter($this->pregRaw(self::TYPE_EXPLODE, '=>', $introRaw));
 		foreach ($baseParse as $row){
-			$parseRow = $this->pregRaw(self::TYPE_EXPLODE, ':', $row);
-			$tableName = $parseRow[0];
-			$fields = array_filter($this->pregRaw(self::TYPE_EXPLODE, '->', $parseRow[1]));
-			//下划线命名法转驼峰命名法
-			$model = $this->UnderlineToCamelCase($tableName);
-			$rst[] = [
+
+			// 获取第一个 : 出现的位置并且提取该子串
+			$titleStr = mb_substr($row, 0, mb_stripos($row, ':'));
+
+			// 获得剩余的字符串, 需要把坐标+1, 排除掉第一个 :
+			$row = mb_substr($row, mb_stripos($row, ':') + 1);
+
+			// 将数据表标题分解到指定的变量
+			list($tableModel, $tableName, $comment) = explode('|', $titleStr);
+
+			// 去除表注释中包含的引号
+			$comment = str_replace("'", '', $comment);
+
+			// 获取表字段基础数组, 并去除空元素
+			$baseFieldsStr = array_filter(explode('->', $row));
+
+			// 循环表字段, 拆分为相应的数组
+			$finalFields = [];
+			foreach ($baseFieldsStr as $line){
+				// 分割字段名和字段属性
+				list($field, $detail) = explode('|', $line);
+				// 分割字段属性
+				$parseDetail = explode(',', $detail);
+				$finalDetail = [];
+				foreach ($parseDetail as $detailLine){
+					list($lineName, $lineValue) = explode(':', $detailLine);
+					// 如果属性值存在如 string@128 这种结构，那么留给后续生成的时候处理即可
+					$finalDetail[$lineName] = $lineValue;
+				}
+				$finalFields[$field] = $finalDetail;
+			}
+			$rst[$tableModel] = [
 				'name' => $tableName,
-				'fields' => $fields,
-				'model' => $model
+				'fields' => $finalFields,
+				'model' => $tableModel,
+				'comment' => $comment
 			];
 		}
+		$this->setModelTableRelation($rst);
 		return $rst;
+	}
+
+	/**
+	 * 数据表解析后，放入到关联关系属性中，以便 res , model 生成循环时调用
+	 * @param $parsedData
+	 */
+	protected function setModelTableRelation($parsedData)
+	{
+		$this->modelTableRelation = $parsedData;
+	}
+
+	protected function getModelTableRelation()
+	{
+		return $this->modelTableRelation;
 	}
 
 	/**

@@ -27,12 +27,12 @@ class TableEachFieldParser {
 	{
 		$pa = '/DummyTBForeach.*?EndDummyTBForeach/s';
 		preg_match_all($pa,$replacedIntro,$match);
-		dd($match);
+//		dd($match);
 		// 表中的所有字段
 		$tableFileds = [];
 		// 获取DummyTBForeach区间的内容模版
 		// 将所有字段替换为内容模版并输出到内容区间中
-		return '';
+		return $replacedIntro;
 	}
 
 }

@@ -1,19 +1,20 @@
 -route-
 	some/something => App/Some/Something@index -> app.some.something,
+	some/something/create => App/Some/Something@create -> app.some.something,
 -srv-
 	Some/SomeService,
 -res-
-	Erp/Product,
+	Some/TableOne,
 -model-
-	Erp/Product,
+	Some/TableOne,
 -table-
-=>Erp/Product|table_one|comment:'产品表':
-    ->product_id|comment:'主键ID',pk:1
-    ->name|comment:'产品名称',type:string@128,default:''
+=>Some/TableOne|table_one|'产品表':
+    ->table_one_id|comment:'主键ID',pk:1
+    ->table_one_name|comment:'表2字段名称',type:string@128,default:''
     ->created_at|comment:'创建时间',type:int,default:0
     ->updated_at|comment:'更新时间',type:int,default:0
     ->deleted_at|comment:'删除时间',type:int,default:0
-=>table_two:
+=>Some/TableTwo|table_two|'表2':
     ->table_two_id|comment:'主键ID',pk:1
     ->table_two_name|comment:'表2字段名称',type:string@128,default:''
     ->status|comment:'状态',type:tinyInt,default:0
