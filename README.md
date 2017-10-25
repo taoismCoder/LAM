@@ -8,6 +8,11 @@
 ### 我们的目标？
 * 消除码农一切不必要的重复性劳动 XD
 
+### 使用方法：
+```php
+$rst = (new AutoMakeFileParser())->parse(Storage::get('exampleRaw.txt'))->makeFiles();
+```
+
 ### 推荐的结构分层
 -. Controller
 -. Service
