@@ -26,9 +26,10 @@ class TableEachFieldParser extends CommonParser{
 	 * EndDummyTBForeach
 	 * @param array $tableArr 要生成的数据表信息
 	 * @param $replacedIntro
+	 * @param $type
 	 * @return string
 	 */
-	public function replaceTableEach($tableArr, $replacedIntro)
+	public function replaceTableEach($tableArr, $replacedIntro, $type = '')
 	{
 		// 获取DummyTBForeach区间的内容模版，暂时只支持一个 DummyTBForeach
 		$pa = '/DummyTBForeach.*?EndDummyTBForeach/s';
@@ -42,19 +43,29 @@ class TableEachFieldParser extends CommonParser{
 		// 去除循环模版标记
 		$temp = str_replace(['EndDummyTBForeach','DummyTBForeach'], '', $match)[0];
 		$finalFieldsRow = '';
+		$tablePk = '';
+
 		foreach ($tableFields as $k => $v){
-			if($k == 'created_at'){
+			if(isset($v['pk']) && $v['pk']){
+				$tablePk = $k;
+			}
+			if($type == 'res' && $k == 'created_at'){
 				continue;
 			}
-			$finalFieldsRow .= str_replace(['DummyTable', 'DTableFiled'], [$tableName, $k], $temp);
+			$finalFieldsRow .= str_replace(['DummyTable', 'DTableField'], [$tableName, $k], $temp);
 		}
 
 		// 将生成的所有字段的基础查询语句输出到模版中
 		$replacedIntro = preg_replace($pa, $finalFieldsRow, $replacedIntro);
-
 		// 将循环外部的 DummyTable 替换成表名
-		$replacedIntro = str_replace('DummyTable', $tableName, $replacedIntro);
+		$modelReplace = [
+			'DummyTable' => $tableName,
+			'DummyTPk' => $tablePk,
+			'DummyTComment' => $tableArr['comment']
+		];
+		$replacedIntro = str_replace(array_keys($modelReplace), array_values($modelReplace), $replacedIntro);
 
+		dd($type);
 		// 将所有字段替换为内容模版并输出到内容区间中
 		return $replacedIntro;
 	}

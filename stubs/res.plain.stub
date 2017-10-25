@@ -30,8 +30,8 @@ class DummyClassName extends BaseRepository
     {
         $query = $this->model;
     DummyTBForeach
-        if (Request::has('DummyTable.DTableFiled')) {
-            $query = $query->where('DummyTable.DTableFiled', '=', Request::input('DTableFiled'));
+        if (Request::has('DummyTable.DTableField')) {
+            $query = $query->where('DummyTable.DTableField', '=', Request::input('DTableField'));
         }
     EndDummyTBForeach
         if (Request::has('DummyTable.created_at')) {
@@ -55,5 +55,4 @@ class DummyClassName extends BaseRepository
     {
 		return $this->model->where('DummyTablePk', '=', $DummyTablePk)->first();
     }
-    DummyMore
 }

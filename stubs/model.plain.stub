@@ -1,0 +1,39 @@
+<?php
+
+namespace DummyNamespace;
+
+use Illuminate\Database\Eloquent\Model;
+//use Illuminate\Database\Eloquent\SoftDeletes;
+
+/**
+ * DummyClassName
+ * DummyTComment
+ * Class DummyUsePath
+ * @package DummyNamespace
+ */
+class DummyClassName extends Model
+{
+    //use SoftDeletes;
+
+    // 表基础定义
+    protected $table = 'DummyTable';
+    protected $primaryKey = 'DummyTPk';
+    protected $dateFormat = 'U';
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
+    protected $fillable = [];
+    protected $guarded = ['DummyTPk'];
+
+DummyTBForeach
+    /**
+     * DTableComment
+     * @return DTableType
+     */
+    public function getDTableUTCCField()
+    {
+        return $this->DTableField;
+    }
+EndDummyTBForeach
+
+    DummyMore
+
+}

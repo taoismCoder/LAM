@@ -11,6 +11,14 @@ class CommonParser {
 	public function __construct(){}
 
 	/**
+	 * @return \Illuminate\Foundation\Application|\App\Helpers\LAM\TableEachFieldParser
+	 */
+	protected function getTableEachFieldParse()
+	{
+		return app('App\Helpers\LAM\TableEachFieldParser');
+	}
+
+	/**
 	 * 清除制表符
 	 * @param $raw
 	 * @param string $custom
@@ -48,6 +56,49 @@ class CommonParser {
 			copy($path, $path.'_'.date('Y_m_d_H_i_s', time()));
 		}
 		return file_put_contents($path, $contents, $lock ? LOCK_EX : 0);
+	}
+
+	/**
+	 * 根据类型和需要生成的模版类型获取模版路径
+	 * @param $type
+	 * @param string $stubType
+	 * @return string
+	 */
+	protected function getStub($type, $stubType = 'plain')
+	{
+		return __DIR__.'/stubs/'.$type.'.'.$stubType.'.stub';
+	}
+
+	/**
+	 * 根据正则匹配对应的结果
+	 * @param string $parseType
+	 * @param $pattern
+	 * @param $raw
+	 * @return mixed
+	 */
+	protected function pregRaw($parseType = 'preg', $pattern, $raw)
+	{
+		$parseRst = [];
+
+		if ($parseType == 'preg'){
+			preg_match_all($pattern, $raw, $parseRst);
+			array_shift($parseRst);
+		}elseif($parseType == 'explode'){
+			$raw = $this->clearTabs($raw);
+			$parseRst = explode($pattern, $raw);
+		}
+
+		return $parseRst;
+	}
+
+	/**
+	 * 获取文件的文件夹路径
+	 * @param $realPath
+	 * @return string
+	 */
+	protected function getPathDir($realPath)
+	{
+		return mb_substr($realPath, 0, strripos($realPath, '/'));
 	}
 
 }

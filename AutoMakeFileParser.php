@@ -120,8 +120,14 @@ class AutoMakeFileParser extends CommonParser
 			return $this->makeService($intro);
 		}
 
+		// 会同时生成 res 中包含的 model
 		if($type == 'res'){
 			return $this->makeRepository($intro);
+		}
+
+		// table 中的 model 不在此列，此处只生成与 table 无关的model
+		if($type == 'model'){
+			return $this->makeModel($intro);
 		}
 	}
 
@@ -264,12 +270,24 @@ class AutoMakeFileParser extends CommonParser
 					// 根据服务名称获取需要生成的文件路径
 					$needMakeFilePath = $this->getNeedMakeFilePath($filePathName, $type);
 					// 需要创建的文件夹路径
-					$needMakeDir = str_replace(class_basename($filePathName).'Repository.php', '', $needMakeFilePath);
-					// 类名
+					$needMakeDir = $this->getPathDir($needMakeFilePath);
+					// 基础类名 或 对应的 Model 名称
 					$baseClassName = class_basename($filePathName);
 					// 当前文件完整的类名
 					$dummyClassName = $baseClassName.$this->getMakeType();
-					// 需要替换的 tag 及对应的值
+
+					// 需要替换 model 模版的 tag 及对应的值
+					$tableModelNamespace = $this->getFileNamespace($filePathName, 'model');
+					$replaceModelArr = [
+						'DummyNamespace' => $tableModelNamespace,
+						'DummyClassName' => $baseClassName,
+						'DummyUsePath' => $tableModelNamespace.'\\'.$baseClassName,
+						'DummyFilePathName' => $filePathName
+					];
+					// 生成相关 Model, 传入生成的 Model 路径
+					$this->makeTableModel($this->getNeedMakeFilePath($filePathName, 'model'), $replaceModelArr);
+
+					// 需要替换 res 模版的 tag 及对应的值
 					$replaceArr = [
 						'DummyNamespace' => $this->getFileNamespace($filePathName),
 						'DummyClassName' => $dummyClassName,
@@ -303,35 +321,70 @@ class AutoMakeFileParser extends CommonParser
 	}
 
 	/**
+	 * 生成与数据表无关的模型类
+	 * @param $intro
+	 * @return bool
+	 */
+	protected function makeModel($intro)
+	{
+		$type = $this->makeType;
+		$needMakeFiles = $intro;
+		//todo 等待
+		return true;
+	}
+
+	/**
+	 * 生成数据表模型类
+	 * @param $realFilePath
+	 * @param $replaceModelArr
+	 * @return bool
+	 */
+	protected function makeTableModel($realFilePath, $replaceModelArr)
+	{
+		// 需要创建的文件夹路径
+		$needMakeDir = $this->getPathDir($realFilePath);
+		// 检查模版路径是否存在
+		$stubPath = $this->getStub('model');
+		if (!file_exists($stubPath)){
+			echo $stubPath.' 模板不存在<br/>';
+			return false;
+		}
+		// 判断文件夹是否存在，不存在则创建文件夹
+		if(!is_dir($needMakeDir)){
+			// 创建文件夹
+			//mkdir($needMakeDir, 0755, true);
+		}
+
+		// 替换模版中的名称及相关信息
+		$finalContents = $this->replaceStubTags($stubPath, $replaceModelArr, 'model');
+		dd($finalContents);
+		return true;
+	}
+
+	/**
 	 * 替换模版中的标签
 	 * @param $filePath
 	 * @param $replaceArr
+	 * @param $type
 	 * @return bool
 	 */
-	protected function replaceStubTags($filePath, $replaceArr)
+	protected function replaceStubTags($filePath, $replaceArr, $type = '')
 	{
 		if(empty($replaceArr)){
 			return false;
 		}
+		$type = !empty($type) ? $type : $this->makeType;
 		$filePathName = $replaceArr['DummyFilePathName'] ?? '';
 		$fileContents = file_get_contents($filePath);
 		$baseReplace = str_replace(
 			array_keys($replaceArr), array_values($replaceArr), $fileContents
 		);
-		if($this->makeType == 'res' || $this->makeType == 'model'){
+		if($this->makeType == 'res'){
 			$modelTableRelation = $this->getModelTableRelation()[$filePathName] ?? [];
-			$baseReplace = $this->getTableEachFieldParse()->replaceTableEach($modelTableRelation, $baseReplace);
+			$baseReplace = $this->getTableEachFieldParse()->replaceTableEach($modelTableRelation, $baseReplace, $type);
 		}
 
 		return $baseReplace;
-	}
-
-	/**
-	 * @return \Illuminate\Foundation\Application|\App\Helpers\LAM\TableEachFieldParser
-	 */
-	protected function getTableEachFieldParse()
-	{
-		return app('App\Helpers\LAM\TableEachFieldParser');
 	}
 
 	/**
@@ -347,17 +400,6 @@ class AutoMakeFileParser extends CommonParser
 		$targetNamespace = 'get'.$this->getMakeType($type).'Namespace';
 		$serviceRootNamespace = $this->$targetNamespace($rootNamespace);
 		return $serviceRootNamespace.'\\'.str_replace('/'.class_basename($rawFileName), '', $rawFileName);
-	}
-
-	/**
-	 * 根据类型和需要生成的模版类型获取模版路径
-	 * @param $type
-	 * @param string $stubType
-	 * @return string
-	 */
-	protected function getStub($type, $stubType = 'plain')
-	{
-		return __DIR__.'/stubs/'.$type.'.'.$stubType.'.stub';
 	}
 
 	/**
@@ -415,12 +457,17 @@ class AutoMakeFileParser extends CommonParser
 		}
 
 		$rootNamespace = trim($rootNamespace, '\\');
-
+		$suffix = '';
 		switch ($type){
 			case 'ctrl':
 				$rootNamespace = $this->getControllersNamespace($rootNamespace);
 				break;
 			case 'res':
+				// 如果书写生成文档时不包含后缀，则追加
+				if(mb_strpos($name, 'Repository') === false){
+					// 补充的后缀，方便简写
+					$suffix = 'Repository';
+				}
 				$rootNamespace = $this->getRepositoryNamespace($rootNamespace);
 				break;
 			case 'serv':
@@ -431,7 +478,7 @@ class AutoMakeFileParser extends CommonParser
 				break;
 		}
 
-		return $this->parseName($rootNamespace.'\\'.$name.'Repository', $type);
+		return $this->parseName($rootNamespace.'\\'.$name.$suffix, $type);
 	}
 
 	/**
@@ -513,19 +560,19 @@ class AutoMakeFileParser extends CommonParser
 	{
 		switch ($type){
 			case 'route':
-				return self::parseRouteIntro($introRaw);
+				return $this->parseRouteIntro($introRaw);
 				break;
 			case 'ctrl':
-				return self::parseCtrlIntro($introRaw);
+				return $this->parseCtrlIntro($introRaw);
 				break;
 			case 'res':
-				return self::parseResIntro($introRaw);
+				return $this->parseResIntro($introRaw);
 				break;
 			case 'serv':
-				return self::parseServIntro($introRaw);
+				return $this->parseServIntro($introRaw);
 				break;
 			case 'table':
-				return self::parseTableIntro($introRaw);
+				return $this->parseTableIntro($introRaw);
 				break;
 			default:
 				return [];
@@ -615,6 +662,7 @@ class AutoMakeFileParser extends CommonParser
 	{
 		$rst = [];
 		$baseParse = array_filter($this->pregRaw(self::TYPE_EXPLODE, '=>', $introRaw));
+
 		foreach ($baseParse as $row){
 
 			// 获取第一个 : 出现的位置并且提取该子串
@@ -670,28 +718,6 @@ class AutoMakeFileParser extends CommonParser
 	protected function getModelTableRelation()
 	{
 		return $this->modelTableRelation;
-	}
-
-	/**
-	 * 根据正则匹配对应的结果
-	 * @param string $parseType
-	 * @param $pattern
-	 * @param $raw
-	 * @return mixed
-	 */
-	private function pregRaw($parseType = self::TYPE_PREG, $pattern, $raw)
-	{
-		$parseRst = [];
-
-		if ($parseType == self::TYPE_PREG){
-			preg_match_all($pattern, $raw, $parseRst);
-			array_shift($parseRst);
-		}elseif($parseType == self::TYPE_EXPLODE){
-			$raw = $this->clearTabs($raw);
-			$parseRst = explode($pattern, $raw);
-		}
-
-		return $parseRst;
 	}
 
 }
