@@ -9,8 +9,14 @@ use App\Helpers\LAM\TableEachFieldParser;
  * @package  App\Helpers\LAM
  * @author   Vicleos <510331882@qq.com> https://github.com/taoismCoder/LAM
  */
-class AutoMakeFileParser
+class AutoMakeFileParser extends CommonParser
 {
+
+	public function __construct()
+	{
+		parent::__construct();
+	}
+
 	/* ------------------------------------------------------------------------------------------------
 	 |  Properties
 	 | ------------------------------------------------------------------------------------------------
@@ -270,6 +276,7 @@ class AutoMakeFileParser
 						'DummyUsePath' => $this->getFileNamespace($filePathName).'\\'.$dummyClassName,
 						'DummyModelName' => $baseClassName,
 						'DummyModelUsePath' => $this->getFileNamespace($filePathName, 'model').'\\'.$baseClassName,
+						'DummyFilePathName' => $filePathName,
 						'DummyMore' => ''
 					];
 					// 替换模版中的名称及相关信息
@@ -306,12 +313,14 @@ class AutoMakeFileParser
 		if(empty($replaceArr)){
 			return false;
 		}
+		$filePathName = $replaceArr['DummyFilePathName'] ?? '';
 		$fileContents = file_get_contents($filePath);
 		$baseReplace = str_replace(
 			array_keys($replaceArr), array_values($replaceArr), $fileContents
 		);
 		if($this->makeType == 'res' || $this->makeType == 'model'){
-			$baseReplace = $this->getTableEachFieldParse()->replaceTableEach($this->makeType, $baseReplace);
+			$modelTableRelation = $this->getModelTableRelation()[$filePathName] ?? [];
+			$baseReplace = $this->getTableEachFieldParse()->replaceTableEach($modelTableRelation, $baseReplace);
 		}
 
 		return $baseReplace;
@@ -416,6 +425,9 @@ class AutoMakeFileParser
 				break;
 			case 'serv':
 				$rootNamespace = $this->getServiceNamespace($rootNamespace);
+				break;
+			case 'model':
+				$rootNamespace = $this->getModelNamespace($rootNamespace);
 				break;
 		}
 
@@ -680,45 +692,6 @@ class AutoMakeFileParser
 		}
 
 		return $parseRst;
-	}
-
-	/**
-	 * 清除制表符
-	 * @param $raw
-	 * @return mixed
-	 */
-	private function clearTabs($raw)
-	{
-		$raw = preg_replace('/[\t\r\n\s]/', '', $raw);
-		return $raw;
-	}
-
-	/**
-	 * 下划线命名法转驼峰命名法
-	 * @param $str
-	 * @return mixed
-	 */
-	private function UnderlineToCamelCase($str)
-	{
-		// 去除空格(单词首字母大写(将下划线替换为空格))
-		return preg_replace('# #', '', ucwords(str_replace('_', ' ', $str)));
-	}
-
-	/**
-	 * Write the contents of a file.
-	 *
-	 * @param  string  $path
-	 * @param  string  $contents
-	 * @param  bool  $lock
-	 * @return int
-	 */
-	public function put($path, $contents, $lock = false)
-	{
-		// 如果直接使用put方法创建文件，为了防止意外覆盖旧文件，则先备份旧文件
-		if(file_exists($path)){
-			copy($path, $path.'_'.date('Y_m_d_H_i_s', time()));
-		}
-		return file_put_contents($path, $contents, $lock ? LOCK_EX : 0);
 	}
 
 }
