@@ -1,6 +1,6 @@
 -route-
-	some/something => App/Some/Something@index -> app.some.something,
-	some/something/create => App/Some/Something@create -> app.some.something,
+	get@some/something => Some/Something@index -> some.something,
+    post@some/something/upgrade => Some/Something@upgrade -> some.something.upgrade,
 -srv-
 	Some/SomeService,
 -res-
