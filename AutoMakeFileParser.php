@@ -196,10 +196,13 @@ class AutoMakeFileParser extends CommonParser
 				// 修改基础 Controller, 追加 route 信息中存在的方法, 一个文件只会执行一次
 				if(file_exists($needMakeFilePath)){
 					echo '<li>开始装入需要的函数</li>';
+					// 要添加的函数列表
 					$funcArr = array_column($item, 'action');
+					// 当前文件的文本内容
 					$fileContents = $this->getFileContents($needMakeFilePath);
+					// 函数模版内容
 					$funcStubContent = $this->getFileContents($this->getStub('ctrl_func'));
-
+					// 替换模版中的值，并追加到控制器内容中
 					$this->appendFuncToFileContent($needMakeFilePath, $funcArr, $fileContents, $funcStubContent, false);
 				}
 			}else{

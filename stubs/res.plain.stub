@@ -30,6 +30,7 @@ class DummyClassName extends BaseRepository
     {
         $query = $this->model;
     DummyTBForeach
+        // DTFieldComment
         if (Request::has('DummyTable.DTableField')) {
             $query = $query->where('DummyTable.DTableField', '=', Request::input('DTableField'));
         }
@@ -48,11 +49,11 @@ class DummyClassName extends BaseRepository
 
 	/**
 	 * 根据ID获取记录
-	 * @param $DummyTablePk
+	 * @param $DummyTPk
 	 * @return mixed
 	 */
-    public function getById($DummyTablePk)
+    public function getById($DummyTPk)
     {
-		return $this->model->where('DummyTablePk', '=', $DummyTablePk)->first();
+		return $this->model->where('DummyTPk', '=', $DummyTPk)->first();
     }
 }
