@@ -25,15 +25,13 @@ class DummyClassName extends Model
 
 DummyTBForeach
     /**
-     * DTableComment
-     * @return DTableType
+     * DTFieldComment
+     * @return DTFieldType
      */
     public function getDTableUTCCField()
     {
         return $this->DTableField;
     }
 EndDummyTBForeach
-
-    DummyMore
 
 }

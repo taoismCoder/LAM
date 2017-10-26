@@ -39,6 +39,8 @@ class TableEachFieldParser extends CommonParser{
 		$tableName = $tableArr['name'] ?? '';
 		// 获取表中的所有字段
 		$tableFields = $tableArr['fields'] ?? [];
+		// 获取表注释
+		$tableComment = $tableArr['comment'] ?? '';
 
 		// 去除循环模版标记
 		$temp = str_replace(['EndDummyTBForeach','DummyTBForeach'], '', $match)[0];
@@ -46,13 +48,35 @@ class TableEachFieldParser extends CommonParser{
 		$tablePk = '';
 
 		foreach ($tableFields as $k => $v){
+			$_fieldType = '';
+
 			if(isset($v['pk']) && $v['pk']){
 				$tablePk = $k;
+				$_fieldType = 'int';
 			}
+
 			if($type == 'res' && $k == 'created_at'){
 				continue;
 			}
-			$finalFieldsRow .= str_replace(['DummyTable', 'DTableField'], [$tableName, $k], $temp);
+
+			if(isset($v['type'])){
+				$_fieldType = str_replace('@', ' ',$v['type']);
+			}
+
+			$_temp = [
+				'DTableUTCCField' => $this->UnderlineToCamelCase($k),
+				'DummyTable' => $tableName,
+				'DTableField' => $k,
+				'DTFieldType' => $_fieldType
+			];
+
+			if(!isset($v['comment'])){
+				var_dump($k);
+			}else{
+				$_temp['DTFieldComment'] = str_replace("'", '', $v['comment']);
+			}
+
+			$finalFieldsRow .= str_replace(array_keys($_temp), array_values($_temp), $temp);
 		}
 
 		// 将生成的所有字段的基础查询语句输出到模版中
@@ -61,11 +85,10 @@ class TableEachFieldParser extends CommonParser{
 		$modelReplace = [
 			'DummyTable' => $tableName,
 			'DummyTPk' => $tablePk,
-			'DummyTComment' => $tableArr['comment']
+			'DummyTComment' => $tableComment,
 		];
 		$replacedIntro = str_replace(array_keys($modelReplace), array_values($modelReplace), $replacedIntro);
 
-		dd($type);
 		// 将所有字段替换为内容模版并输出到内容区间中
 		return $replacedIntro;
 	}

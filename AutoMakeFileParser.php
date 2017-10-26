@@ -341,6 +341,11 @@ class AutoMakeFileParser extends CommonParser
 	 */
 	protected function makeTableModel($realFilePath, $replaceModelArr)
 	{
+		// 判断当前文件是否存在
+		if($this->alreadyExists($realFilePath, 'model')){
+			echo $realFilePath.' 文件已存在<br/>';
+			return false;
+		}
 		// 需要创建的文件夹路径
 		$needMakeDir = $this->getPathDir($realFilePath);
 		// 检查模版路径是否存在
@@ -352,13 +357,21 @@ class AutoMakeFileParser extends CommonParser
 		// 判断文件夹是否存在，不存在则创建文件夹
 		if(!is_dir($needMakeDir)){
 			// 创建文件夹
-			//mkdir($needMakeDir, 0755, true);
+			mkdir($needMakeDir, 0755, true);
 		}
 
 		// 替换模版中的名称及相关信息
 		$finalContents = $this->replaceStubTags($stubPath, $replaceModelArr, 'model');
-		dd($finalContents);
-		return true;
+		// 输出文件
+		if($this->put($realFilePath, $finalContents)){
+			echo $realFilePath.' 执行完毕<br/>';
+			return true;
+		}else{
+			echo $realFilePath.' <label style="color:red">执行失败</label><br/>';
+			return false;
+		}
+
+
 	}
 
 	/**
