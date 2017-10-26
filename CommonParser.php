@@ -42,6 +42,16 @@ class CommonParser {
 	}
 
 	/**
+	 * 获取文件内容
+	 * @param $path
+	 * @return string
+	 */
+	protected function getFileContents($path)
+	{
+		return file_get_contents($path);
+	}
+
+	/**
 	 * Write the contents of a file.
 	 *
 	 * @param  string  $path
@@ -56,6 +66,48 @@ class CommonParser {
 			copy($path, $path.'_'.date('Y_m_d_H_i_s', time()));
 		}
 		return file_put_contents($path, $contents, $lock ? LOCK_EX : 0);
+	}
+
+	/**
+	 * 追加方法函数到文件内容中
+	 * @param $path
+	 * @param array $funcArr
+	 * @param $contents
+	 * @param $funcStubContent
+	 * @param bool $isBackup
+	 * @return string
+	 */
+	protected function appendFuncToFileContent($path, $funcArr = [], $contents, $funcStubContent, $isBackup = true)
+	{
+		$insertContents = '';
+		foreach ($funcArr as $_action){
+			list($_funcName, $_viewName) = explode('@', $_action);
+			// 如果为首页方法名，则 view 名称增加默认 .index
+			if($_funcName == 'index'){
+				$_viewName .= '.index';
+			}
+			$insertContents .= str_replace(['FunctionName', 'ViewName'], [$_funcName, $_viewName], $funcStubContent);
+		}
+		$finalContents = str_replace('//', $insertContents, $contents);
+		if ($isBackup){
+			return $this->put($path, $finalContents);
+		}else{
+			return file_put_contents($path, $finalContents);
+		}
+	}
+
+	/**
+	 * 指定位置插入字符串
+	 * @param string $str 原字符串
+	 * @param int $i    插入位置
+	 * @param string $insertStr 插入字符串
+	 * @return string 处理后的字符串
+	 */
+	function insertToStr($str, $i, $insertStr){
+
+
+		//返回结果
+		return $str;
 	}
 
 	/**

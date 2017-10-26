@@ -186,12 +186,22 @@ class AutoMakeFileParser extends CommonParser
 	private function makeRoute($intro)
 	{
 		$type = 'ctrl';
-		$needMakeControllers = array_unique(array_column($intro, 'controller'));
-		foreach ($needMakeControllers as $filePathName){
-			$fileIsExists = $this->alreadyExists($filePathName, $type);
-			if(!$fileIsExists){
+
+		foreach ($intro as $filePathName => $item){
+			$needMakeFilePath = $this->getNeedMakeFilePath($filePathName, $type);
+			if(!file_exists($needMakeFilePath)){
+				// 生成基础 Controller
 				Artisan::call('make:controller', ['name' => $filePathName]);
 				echo $filePathName.' '.Artisan::output().'<br/>';
+				// 修改基础 Controller, 追加 route 信息中存在的方法, 一个文件只会执行一次
+				if(file_exists($needMakeFilePath)){
+					echo '<li>开始装入需要的函数</li>';
+					$funcArr = array_column($item, 'action');
+					$fileContents = $this->getFileContents($needMakeFilePath);
+					$funcStubContent = $this->getFileContents($this->getStub('ctrl_func'));
+
+					$this->appendFuncToFileContent($needMakeFilePath, $funcArr, $fileContents, $funcStubContent, false);
+				}
 			}else{
 				echo $filePathName.' 文件已存在<br/>';
 				return false;
@@ -364,7 +374,7 @@ class AutoMakeFileParser extends CommonParser
 		$finalContents = $this->replaceStubTags($stubPath, $replaceModelArr, 'model');
 		// 输出文件
 		if($this->put($realFilePath, $finalContents)){
-			echo $realFilePath.' 执行完毕<br/>';
+			echo $realFilePath.' <b>执行完毕</b><br/>';
 			return true;
 		}else{
 			echo $realFilePath.' <label style="color:red">执行失败</label><br/>';
@@ -622,10 +632,9 @@ class AutoMakeFileParser extends CommonParser
 
 			list($ctrl, $action) = explode('@', $ctrlAndAction);
 
-			$parseRoutes[] = [
+			$parseRoutes[$ctrl][] = [
 				'url' => $routeUrl,
-				'controller' => $ctrl,
-				'action' => $action,
+				'action' => $action.'@'.$routeName,
 				'name' => $routeName
 			];
 
