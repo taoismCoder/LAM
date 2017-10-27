@@ -31,11 +31,11 @@ class DummyClassName extends BaseRepository
         $query = $this->model;
     DummyTBForeach
         // DTFieldComment
-        if (Request::has('DummyTable.DTableField')) {
+        if (Request::has('DTableField')) {
             $query = $query->where('DummyTable.DTableField', '=', Request::input('DTableField'));
         }
     EndDummyTBForeach
-        if (Request::has('DummyTable.created_at')) {
+        if (Request::has('created_at')) {
             $arrTime = explode('|', Request::input('DummyTable.created_at'));
             if (count($arrTime) == 2) {
                 $startTime = strtotime($arrTime[0]);
