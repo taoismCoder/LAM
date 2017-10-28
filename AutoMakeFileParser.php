@@ -129,6 +129,11 @@ class AutoMakeFileParser extends CommonParser
 		if($type == 'model'){
 			return $this->makeModel($intro);
 		}
+
+		// 生成 table 对应的 migration
+		if($type == 'table'){
+			return $this->makeMigration($intro);
+		}
 	}
 
 	/* ------------------------------------------------------------------------------------------------
@@ -343,6 +348,18 @@ class AutoMakeFileParser extends CommonParser
 		$type = $this->makeType;
 		$needMakeFiles = $intro;
 		//todo 等待
+		return true;
+	}
+
+	/**
+	 * 生成 Migration
+	 * @param $intro
+	 * @return bool
+	 */
+	protected function makeMigration($intro)
+	{
+		$tableParsedArray = $this->getModelTableRelation();
+		//todo 生成migration 对接 Maker 中的 migration 生成器
 		return true;
 	}
 
