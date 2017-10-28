@@ -1,0 +1,25 @@
+{
+  "table": {
+    "erp_product": {
+        "field": [
+          "key:product_id,type:increments,comment:'自增ID'",
+          "key:product_name,type:string,length:128,default:'',comment:'产品名称'",
+          "key:product_price,type:decimal,length:6,places:2,default:0,unsigned:1,comment:'price'",
+          "key:created_at,type:integer,default:0,unsigned:1,comment:'添加时间'"
+        ],
+        "migration": "create_erp_product_table",
+        "model": "Erp/Product",
+        "repository": "Erp/ProductRepository"
+    },
+    "erp_product_sku": {
+        "field": [
+          "key:product_sku_id,type:increments,comment:'自增ID'",
+          "key:product_id,type:integer,default:'',comment:'产品ID'",
+          "key:created_at,type:integer,default:0,unsigned:1,comment:'添加时间'"
+        ],
+        "migration": "create_erp_product_sku_table",
+        "model": "Erp/ErpProductSku",
+        "repository": "Erp/ErpProductSkuRepository"
+    }
+  }
+}
