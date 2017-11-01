@@ -1,12 +1,18 @@
 <?php
 
-namespace App\Helpers\LAM;
+namespace App\Helpers\LAM\Maker;
 
 use Storage;
 use InvalidArgumentException;
 
-class AutoMakeMigration
-{
+class AutoMakeMigration {
+	/**
+	 * 生成migration数据来源
+	 * json文件 或　txt转化的数组 二选一
+	 * @var
+	 */
+	protected $dataFrom = 'json';
+
 	/**
 	 * The Composer instance.
 	 *
@@ -21,18 +27,30 @@ class AutoMakeMigration
 	protected $tableDetail;
 
 	/**
+	 * 原生json文件名(二选一)
+	 * 用来生成migration
+	 * @var
+	 */
+	protected $rawJsonFileName;
+
+	/**
+	 * 原生txt文件格式后的表数据数组(二选一)
+	 * 用来生成migration
+	 * @var
+	 */
+	protected $rawTxtArray;
+
+	/**
 	 * AutoMakeMigration constructor.
 	 */
-	public function __construct()
-	{
+	public function __construct() {
 		$this->composer = app('Illuminate\Support\Composer');
 	}
 
 	/**
 	 * @return \Illuminate\Foundation\Application|mixed|\Illuminate\Support\Composer
 	 */
-	public function getComposer()
-	{
+	public function getComposer() {
 		static $composer;
 		if ($composer) {
 			return $composer;
@@ -41,23 +59,55 @@ class AutoMakeMigration
 	}
 
 	/**
-	 * 格式化数据表源文件
-	 * 相当于parser操作
-	 * @param $rawFileName
+	 * @param $fileName
 	 * @return $this
 	 */
-	public function setTableDetail($rawFileName)
-	{
-		$content = json_decode(Storage::get($rawFileName), true);
-		//dd($content['table']);
-		foreach($content['table'] as $tableName => $tableInfo) {
+	public function setRawJsonFileName($fileName) {
+		$this->rawJsonFileName = $fileName;
+		$this->dataFrom = 'json';
+		return $this;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getRawJsonFileName() {
+		return $this->rawJsonFileName;
+	}
+
+	/**
+	 * @param $rawArr
+	 * @return $this
+	 */
+	public function setRawTxtArray($rawArr) {
+		$this->rawTxtArray = $rawArr;
+		$this->dataFrom = 'txtArr';
+		return $this;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getRawTxtArray() {
+		return $this->rawTxtArray;
+	}
+
+	/**
+	 * 格式化数据表源文件
+	 * 相当于parser操作
+	 * @return $this
+	 */
+	public function setTableDetail() {
+		$sourceData = $this->getMigrationSourceData();
+
+		foreach ($sourceData as $tableName => $tableInfo) {
 			//dump($tableName, $tableInfo, $tableInfo['field']);
 			$tableFieldDetail = "";
 			$tableFieldDetail .= "$" . "table->engine = 'InnoDB';" . PHP_EOL;
 
-			foreach($tableInfo['field'] as $tableField) {
+			foreach ($tableInfo['field'] as $tableField) {
 				$tempArr = [];
-				foreach(explode(',', $tableField) as $field) {
+				foreach (explode(',', $tableField) as $field) {
 					list($key, $val) = explode(':', $field);
 					$tempArr[$key] = $val;
 				}
@@ -70,21 +120,71 @@ class AutoMakeMigration
 			$this->tableDetail[$tableName] = $tableInfo;
 		}
 		//dump($this->getTableDetail());
-		return $this;
+		//return $this;
 		//dd($this->getTableDetail());
 	}
 
 	/**
 	 * @return mixed
 	 */
-	public function getTableDetail()
-	{
+	public function getTableDetail() {
 		return $this->tableDetail;
 	}
 
+	/**
+	 * 返回格式
+	 * [
+	 *        "table_name_1" => [
+	 *            "field" => [
+	 *                0 => "key:product_id,type:increments,comment:'自增ID'"
+	 *                1 => "key:product_name,type:string,length:128,default:'',comment:'产品名称'"
+	 *                2 => "key:product_price,type:decimal,length:6,places:2,default:0,unsigned:1,comment:'price'"
+	 *                3 => "key:created_at,type:integer,default:0,unsigned:1,comment:'添加时间'"
+	 *            ],
+	 *            "migration" => "create_table_name_1_table",
+	 *            "model" => "ParentDir/ModelName",
+	 *            "repository" => "ParentDir/RepositoryName"
+	 *        ],
+	 *
+	 *        "table_name_2" => [...]
+	 * ]
+	 *
+	 * @return array
+	 */
+	public function getMigrationSourceData() {
+		$distArr = [];
+		if ($this->dataFrom == 'json') {
+			$content = json_decode(Storage::get($this->getRawJsonFileName()), true);
+			//dd($content, $content['table']);
+			$distArr = $content['table'];
+		} elseif ($this->dataFrom == 'txtArr') {
+			$txtArr = $this->getRawTxtArray();
+			foreach ($txtArr as $tableItem) {
+				$tableName = $tableItem['name'];
+				$tempArr = [
+					"migration" => "create_" . $tableName . "_table",
+					"model" => $tableItem['model'],
+					"repository" => $tableItem['model'] . 'Repository',
+				];
 
-	public function makeMigration()
-	{
+				foreach ($tableItem['fields'] as $keyName => $keyInfo) {
+					$tempKeyInfo = "key:" . $keyName;
+					foreach ($keyInfo as $k => $v) {
+						$tempKeyInfo .= "," . $k . ":" . $v;
+					}
+					$tempArr['field'][] = $tempKeyInfo;
+				}
+
+				$distArr[$tableName] = $tempArr;
+			}
+		}
+
+		return $distArr;
+	}
+
+
+	public function makeMigration() {
+		$this->setTableDetail();
 		$this->writeMigration();
 		return true;
 	}
@@ -94,25 +194,23 @@ class AutoMakeMigration
 	 *
 	 * @return string
 	 */
-	protected function writeMigration()
-	{
+	protected function writeMigration() {
 		$path = $this->getMigrationPath();
 
-		foreach($this->getTableDetail() as $tableName => $tableDetail) {
+		foreach ($this->getTableDetail() as $tableName => $tableDetail) {
 			$file = pathinfo($this->create($tableDetail['migration'], $path, $tableName), PATHINFO_FILENAME);
-			echo $file . '生成完成<br/>';
 			$this->composer->dumpAutoloads();
+			echo $file . '生成完成<br/>';
 		}
 
 	}
 
 
-	protected function create($name, $path, $table)
-	{
+	protected function create($name, $path, $table) {
 		if (class_exists($className = $this->getClassName($name))) {
 			throw new InvalidArgumentException("A $className migration already exists.");
 		}
-//dd($this->getClassName($name), class_exists($className = $this->getClassName($name)));
+dd($this->getClassName($name), class_exists($className = $this->getClassName($name)));
 		$path = $this->getPath($name, $path);
 
 		$stub = $this->getMigrationStub();
@@ -129,21 +227,19 @@ class AutoMakeMigration
 	 *
 	 * @return string
 	 */
-	public function getMigrationPath()
-	{
-		return app()->databasePath().DIRECTORY_SEPARATOR.'migrations';
+	public function getMigrationPath() {
+		return app()->databasePath() . DIRECTORY_SEPARATOR . 'migrations';
 	}
 
 	/**
 	 * Get the full path name to the migration.
 	 *
-	 * @param  string  $name
-	 * @param  string  $path
+	 * @param  string $name
+	 * @param  string $path
 	 * @return string
 	 */
-	protected function getPath($name, $path)
-	{
-		return $path.'/'.$this->getDatePrefix().'_'.$name.'.php';
+	protected function getPath($name, $path) {
+		return $path . '/' . $this->getDatePrefix() . '_' . $name . '.php';
 	}
 
 	/**
@@ -151,8 +247,7 @@ class AutoMakeMigration
 	 *
 	 * @return string
 	 */
-	protected function getDatePrefix()
-	{
+	protected function getDatePrefix() {
 		return date('Y_m_d_His');
 	}
 
@@ -160,29 +255,26 @@ class AutoMakeMigration
 	 * 根据类型和需要生成的模版类型获取模版路径
 	 * @return string
 	 */
-	protected function getMigrationStub()
-	{
-		return __DIR__.'/stubs/create.migration.plain.stub';
+	protected function getMigrationStub() {
+		return __DIR__ . '/../stubs/create.migration.plain.stub';
 	}
 
-	public function getClassName($name)
-	{
+	public function getClassName($name) {
 		return studly_case($name);
 	}
 
 	/**
 	 * Write the contents of a file.
 	 *
-	 * @param  string  $path
-	 * @param  string  $contents
-	 * @param  bool  $lock
+	 * @param  string $path
+	 * @param  string $contents
+	 * @param  bool $lock
 	 * @return int
 	 */
-	protected function put($path, $contents, $lock = false)
-	{
+	protected function put($path, $contents, $lock = false) {
 		// 如果直接使用put方法创建文件，为了防止意外覆盖旧文件，则先备份旧文件
-		if(file_exists($path)){
-			copy($path, $path.'_'.date('Y_m_d_H_i_s', time()));
+		if (file_exists($path)) {
+			copy($path, $path . '_' . date('Y_m_d_H_i_s', time()));
 		}
 		return file_put_contents($path, $contents, $lock ? LOCK_EX : 0);
 	}
@@ -190,13 +282,12 @@ class AutoMakeMigration
 	/**
 	 * Populate the place-holders in the migration stub.
 	 *
-	 * @param  string  $name
-	 * @param  string  $stub
-	 * @param  string  $table
+	 * @param  string $name
+	 * @param  string $stub
+	 * @param  string $table
 	 * @return string
 	 */
-	public function populateStub($name, $stub, $table)
-	{
+	public function populateStub($name, $stub, $table) {
 		$fileContents = file_get_contents($stub);
 		$fileContents = str_replace('DummyClass', $this->getClassName($name), $fileContents);
 		$fileContents = str_replace('DummyTable', $table, $fileContents);
@@ -210,8 +301,11 @@ class AutoMakeMigration
 	 * @param $fieldProps
 	 * @return string
 	 */
-	protected function makeField($fieldProps)
-	{
+	protected function makeField($fieldProps) {
+		if ($fieldProps['type'] == 'int') {
+			$fieldProps['type'] = 'integer';
+		}
+
 		$hasOneLengthField = [
 			'char', 'string'
 		];
@@ -224,30 +318,27 @@ class AutoMakeMigration
 			'integer', 'bigInteger', 'decimal', 'float', 'double'
 		];
 
-		//$table->string('status_message', 256)->default('')->comment('状态消息');
-		//$table->string('message_id', 64)->default('')->comment('第三方ID');
-		//$table->integer('created_at')->default(0)->unsigned()->comment('发送时间');
 		$field = '';
 		if (in_array($fieldProps['type'], $hasOneLengthField) && $fieldProps['length']) {
-			$field .= "$" . "table->". $fieldProps['type'] ."('". $fieldProps['key'] ."',". $fieldProps['length'] .")";
+			$field .= "$" . "table->" . $fieldProps['type'] . "('" . $fieldProps['key'] . "'," . $fieldProps['length'] . ")";
 		} elseif (in_array($fieldProps['type'], $hasTwoLengthField) && $fieldProps['length'] && $fieldProps['places']) {
-			$field .= "$" . "table->". $fieldProps['type'] ."('". $fieldProps['key'] ."',". $fieldProps['length'] .",". $fieldProps['places'] .")";
+			$field .= "$" . "table->" . $fieldProps['type'] . "('" . $fieldProps['key'] . "'," . $fieldProps['length'] . "," . $fieldProps['places'] . ")";
 		} else {
-			$field .= "$" . "table->". $fieldProps['type'] ."('". $fieldProps['key'] ."')";
+			$field .= "$" . "table->" . $fieldProps['type'] . "('" . $fieldProps['key'] . "')";
 		}
 
 		if (array_key_exists('default', $fieldProps)) {
-			$field .= "->default(". $fieldProps['default'] .")";
+			$field .= "->default(" . $fieldProps['default'] . ")";
 		}
 
 		if (array_key_exists('unsigned', $fieldProps) && in_array($fieldProps['type'], $numberField)) {
-			if($fieldProps['unsigned']){
+			if ($fieldProps['unsigned']) {
 				$field .= "->unsigned()";
 			}
 		}
 
 		if (array_key_exists('comment', $fieldProps)) {
-			$field .= "->comment(". $fieldProps['comment'] .")";
+			$field .= "->comment(" . $fieldProps['comment'] . ")";
 		}
 
 		$field .= ";" . PHP_EOL;
