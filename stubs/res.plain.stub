@@ -36,7 +36,7 @@ class DummyClassName extends BaseRepository
         }
     EndDummyTBForeach
         if (Request::has('created_at')) {
-            $arrTime = explode('|', Request::input('DummyTable.created_at'));
+            $arrTime = explode('|', Request::input('created_at'));
             if (count($arrTime) == 2) {
                 $startTime = strtotime($arrTime[0]);
                 $endTime = strtotime($arrTime[1] . ' 23:59:59');
