@@ -6,25 +6,25 @@ namespace Taoism\LAM\Maker;
  * @package Taoism\LAM\Maker
  */
 interface BaseMaker {
-    	/**
+	/**
 	 * 获取模板文件路径
 	 * @return mixed
 	 */
 	public function getStub();
-	
+
 	/**
 	 * 设置模板文件路径
 	 * @param $path
 	 * @return mixed
 	 */
 	public function setStub($path);
-	
+
 	/**
 	 * 获取原文
 	 * @return mixed
 	 */
 	public function getRawContents();
-	
+
 	/**
 	 * 设置原文
 	 * @param $raw
