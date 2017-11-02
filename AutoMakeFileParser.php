@@ -3,6 +3,7 @@
 use Artisan;
 use Illuminate\Support\Str;
 use App\Helpers\LAM\TableEachFieldParser;
+use App\Helpers\LAM\Maker\AutoMakeMigration;
 /**
  * Class     AutoMakeFileParser
  *
@@ -360,6 +361,7 @@ class AutoMakeFileParser extends CommonParser
 	{
 		$tableParsedArray = $this->getModelTableRelation();
 		//todo 生成migration 对接 Maker 中的 migration 生成器
+		//(new AutoMakeMigration())->setRawTxtArray($tableParsedArray)->makeMigration();
 		return true;
 	}
 

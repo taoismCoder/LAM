@@ -5,6 +5,14 @@ namespace App\Helpers\LAM\Maker;
 use Storage;
 use InvalidArgumentException;
 
+/**
+ * usage:
+ * 		(new AutoMakeMigration())->setRawJsonFileName('exampleRaw.json')->makeMigration();
+ * 		(new AutoMakeMigration())->setRawTxtArray($txtArr)->makeMigration();
+ *
+ * Class AutoMakeMigration
+ * @package App\Helpers\LAM\Maker
+ */
 class AutoMakeMigration {
 	/**
 	 * 生成migration数据来源
@@ -44,7 +52,6 @@ class AutoMakeMigration {
 	 * AutoMakeMigration constructor.
 	 */
 	public function __construct() {
-		$this->composer = app('Illuminate\Support\Composer');
 	}
 
 	/**
@@ -101,13 +108,25 @@ class AutoMakeMigration {
 		$sourceData = $this->getMigrationSourceData();
 
 		foreach ($sourceData as $tableName => $tableInfo) {
-			//dump($tableName, $tableInfo, $tableInfo['field']);
+			//dd($tableName, $tableInfo, $tableInfo['field']);
 			$tableFieldDetail = "";
 			$tableFieldDetail .= "$" . "table->engine = 'InnoDB';" . PHP_EOL;
 
+			$IndexArr = [];
 			foreach ($tableInfo['field'] as $tableField) {
 				$tempArr = [];
-				foreach (explode(',', $tableField) as $field) {
+				$tempIndexArr = [];
+				$tableFields = explode(',', $tableField);
+				//dd($tableFields);
+				if (in_array('type:index', $tableFields) || in_array('type:unique', $tableFields)) {
+					foreach ($tableFields as $field) {
+						list($key, $val) = explode(':', $field);
+						$tempIndexArr[$key] = $val;
+					}
+					$IndexArr[] = $tempIndexArr;
+					continue;
+				}
+				foreach ($tableFields as $field) {
 					list($key, $val) = explode(':', $field);
 					$tempArr[$key] = $val;
 				}
@@ -115,7 +134,11 @@ class AutoMakeMigration {
 
 				$tableFieldDetail .= $this->makeField($tempArr);
 			}
+			foreach ($IndexArr as $indexField) {
+				$tableFieldDetail .= $this->makeField($indexField);
+			}
 			//dd($tableDetail);
+
 			$tableInfo['field'] = $tableFieldDetail;
 			$this->tableDetail[$tableName] = $tableInfo;
 		}
@@ -199,7 +222,7 @@ class AutoMakeMigration {
 
 		foreach ($this->getTableDetail() as $tableName => $tableDetail) {
 			$file = pathinfo($this->create($tableDetail['migration'], $path, $tableName), PATHINFO_FILENAME);
-			$this->composer->dumpAutoloads();
+			$this->getComposer()->dumpAutoloads();
 			echo $file . '生成完成<br/>';
 		}
 
@@ -210,7 +233,7 @@ class AutoMakeMigration {
 		if (class_exists($className = $this->getClassName($name))) {
 			throw new InvalidArgumentException("A $className migration already exists.");
 		}
-dd($this->getClassName($name), class_exists($className = $this->getClassName($name)));
+//dd($this->getClassName($name), class_exists($className = $this->getClassName($name)));
 		$path = $this->getPath($name, $path);
 
 		$stub = $this->getMigrationStub();
@@ -304,6 +327,10 @@ dd($this->getClassName($name), class_exists($className = $this->getClassName($na
 	protected function makeField($fieldProps) {
 		if ($fieldProps['type'] == 'int') {
 			$fieldProps['type'] = 'integer';
+		}  elseif ($fieldProps['type'] == 'tinyInt') {
+			$fieldProps['type'] = 'tinyInteger';
+		}  elseif ($fieldProps['type'] == 'pk') {
+			$fieldProps['type'] = 'increments';
 		}
 
 		$hasOneLengthField = [
@@ -318,23 +345,46 @@ dd($this->getClassName($name), class_exists($className = $this->getClassName($na
 			'integer', 'bigInteger', 'decimal', 'float', 'double'
 		];
 
+		$indexField = [
+			'index', 'unique'
+		];
+
 		$field = '';
-		if (in_array($fieldProps['type'], $hasOneLengthField) && $fieldProps['length']) {
-			$field .= "$" . "table->" . $fieldProps['type'] . "('" . $fieldProps['key'] . "'," . $fieldProps['length'] . ")";
-		} elseif (in_array($fieldProps['type'], $hasTwoLengthField) && $fieldProps['length'] && $fieldProps['places']) {
-			$field .= "$" . "table->" . $fieldProps['type'] . "('" . $fieldProps['key'] . "'," . $fieldProps['length'] . "," . $fieldProps['places'] . ")";
+
+		if (in_array($fieldProps['type'], $indexField)){
+			if (strpos($fieldProps['key'], '+')) {
+				$indexField = implode('\',\'', explode('+', $fieldProps['key']));
+				$fieldProps['key'] = "['" . $indexField . "']";
+				$field .= "$" . "table->" . $fieldProps['type'] . "(" . $fieldProps['key'] . ")";
+			} else {
+				$field .= "$" . "table->" . $fieldProps['type'] . "('" . $fieldProps['key'] . "')";
+			}
 		} else {
-			$field .= "$" . "table->" . $fieldProps['type'] . "('" . $fieldProps['key'] . "')";
+			if (in_array($fieldProps['type'], $hasOneLengthField) && $fieldProps['length']) {
+				$field .= "$" . "table->" . $fieldProps['type'] . "('" . $fieldProps['key'] . "'," . $fieldProps['length'] . ")";
+			} elseif (in_array($fieldProps['type'], $hasTwoLengthField) && $fieldProps['length'] && $fieldProps['places']) {
+				$field .= "$" . "table->" . $fieldProps['type'] . "('" . $fieldProps['key'] . "'," . $fieldProps['length'] . "," . $fieldProps['places'] . ")";
+			} else {
+				$field .= "$" . "table->" . $fieldProps['type'] . "('" . $fieldProps['key'] . "')";
+			}
 		}
+		unset($fieldProps['type'], $fieldProps['key']);
 
 		if (array_key_exists('default', $fieldProps)) {
 			$field .= "->default(" . $fieldProps['default'] . ")";
+			unset($fieldProps['default']);
 		}
 
 		if (array_key_exists('unsigned', $fieldProps) && in_array($fieldProps['type'], $numberField)) {
 			if ($fieldProps['unsigned']) {
 				$field .= "->unsigned()";
 			}
+		}
+		unset($fieldProps['unsigned']);
+
+		foreach ($fieldProps as $remainKey => $remainField) {
+			if ($remainKey == 'comment') continue;
+			$field .= "->" . $remainKey. "('" . $remainField . "')";
 		}
 
 		if (array_key_exists('comment', $fieldProps)) {
