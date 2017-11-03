@@ -1,15 +1,12 @@
 <?php
-
-
-namespace App\Helpers\LAM;
-
+namespace App\Helpers\LAM\Parser;
 /**
- * Class     TableEachFieldParser
- * 模版关于处理数据表的解析器
+ * Class     TableParser
+ * 处理数据表的解析器
  * @package  App\Helpers\LAM
  * @author   Vicleos <510331882@qq.com> https://github.com/taoismCoder/LAM
  */
-class TableEachFieldParser extends CommonParser{
+class TableParser extends CommonParser{
 
 	public function __construct()
 	{

@@ -1,22 +1,16 @@
 <?php
+namespace App\Helpers\LAM\Parser;
+
+use Taoism\LAM\Parser\BaseParser;
 /**
- * 引擎处理基类
+ * Class CommonParser
+ * 解析器通用方法
+ * @package  App\Helpers\LAM\Parser
+ * @author   Vicleos <510331882@qq.com> https://github.com/taoismCoder/LAM
  */
-
-namespace App\Helpers\LAM;
-
-
-class CommonParser {
+class CommonParser implements BaseParser {
 
 	public function __construct(){}
-
-	/**
-	 * @return \Illuminate\Foundation\Application|\App\Helpers\LAM\TableEachFieldParser
-	 */
-	protected function getTableEachFieldParse()
-	{
-		return app('App\Helpers\LAM\TableEachFieldParser');
-	}
 
 	/**
 	 * 清除制表符
@@ -104,9 +98,7 @@ class CommonParser {
 	 * @return string 处理后的字符串
 	 */
 	function insertToStr($str, $i, $insertStr){
-
-
-		//返回结果
+		//TODO
 		return $str;
 	}
 
@@ -118,7 +110,7 @@ class CommonParser {
 	 */
 	protected function getStub($type, $stubType = 'plain')
 	{
-		return __DIR__.'/stubs/'.$type.'.'.$stubType.'.stub';
+		return __DIR__ . '/stubs/' .$type.'.'.$stubType.'.stub';
 	}
 
 	/**

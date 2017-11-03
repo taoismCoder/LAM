@@ -1,65 +1,133 @@
 <?php namespace App\Helpers\LAM;
 
 use Artisan;
+use App\Helpers\LAM\Parser\CommonParser;
 use Illuminate\Support\Str;
-use App\Helpers\LAM\TableEachFieldParser;
-use App\Helpers\LAM\Maker\AutoMakeMigration;
 /**
- * Class     AutoMakeFileParser
- *
+ * Class AutoMakeFileParser
+ * 生成器入口类
  * @package  App\Helpers\LAM
  * @author   Vicleos <510331882@qq.com> https://github.com/taoismCoder/LAM
  */
 class AutoMakeFileParser extends CommonParser
 {
+    /**
+     * 解析后的格式化数据
+     * @var array
+     */
+    protected $parsed = [];
 
+    /**
+     * 要生成的文件类型
+     * @var string
+     */
+    protected $makeType = '';
+
+    /**
+     * 表与关联的模型的数据
+     * @var array
+     */
+    protected $modelTableRelation = [];
+
+    /**
+     * 匹配类型为 explode
+     * @var string
+     */
+    const TYPE_EXPLODE = 'explode';
+
+    /**
+     * 匹配类型为正则
+     * @var string
+     */
+    const TYPE_PREG = 'preg';
+
+    /**
+     * AutoMakeFileParser constructor.
+     */
 	public function __construct()
 	{
 		parent::__construct();
 	}
 
-	/* ------------------------------------------------------------------------------------------------
-	 |  Properties
-	 | ------------------------------------------------------------------------------------------------
-	 */
-	/**
-	 * Parsed data.
-	 *
-	 * @var array
-	 */
-	protected $parsed = [];
+    /**
+     * 表信息解析器
+     * @return \Illuminate\Foundation\Application|\App\Helpers\LAM\Parser\TableParser
+     */
+    protected function getTableParser()
+    {
+        return app('App\Helpers\LAM\Parser\TableParser');
+    }
+
+    /**
+     * Migration 生成器
+     * @return \Illuminate\Foundation\Application|\App\Helpers\LAM\Maker\MigrationMaker
+     */
+    protected function getMigrationMaker()
+    {
+        return app('App\Helpers\LAM\Maker\MigrationMaker');
+    }
+
+    /**
+     * 设置解析后的格式化值
+     * @param $parsed
+     */
+    protected function setParsed($parsed)
+    {
+        $this->parsed = $parsed;
+    }
+
+    /**
+     * 获取解析后的格式化值
+     * @return array
+     */
+    protected function getParsed()
+    {
+        return $this->parsed;
+    }
+
+    /**
+     * 设置要生成的文件类型
+     * @param $type
+     */
+    protected function setMakeType($type)
+    {
+        $this->makeType = $type;
+    }
+
+    /**
+     * 要生成的文件类型
+     * @param string $type
+     * @return string
+     */
+    protected function getMakeType($type = '')
+    {
+        $rst = '';
+        $type = $type ?: $this->makeType;
+        switch ($type){
+            case 'route':
+                $rst = 'Route';
+                break;
+            case 'ctrl':
+                $rst = 'Controller';
+                break;
+            case 'serv':
+                $rst = 'Service';
+                break;
+            case 'res':
+                $rst = 'Repository';
+                break;
+            case 'table':
+                $rst = 'Table';
+                break;
+            case 'model':
+                $rst = 'Model';
+                break;
+        };
+        return $rst;
+    }
 
 	/**
-	 * 要生成的文件类型
-	 * @var string
-	 */
-	protected $makeType = '';
-
-	/**
-	 * 匹配类型为 explode
-	 */
-	const TYPE_EXPLODE = 'explode';
-
-	/**
-	 * 匹配类型为正则
-	 */
-	const TYPE_PREG = 'preg';
-
-	/**
-	 * 表与关联的模型的数据
-	 * @var array
-	 */
-	protected $modelTableRelation = [];
-
-	/* ------------------------------------------------------------------------------------------------
-	 |  Main Functions
-	 | ------------------------------------------------------------------------------------------------
-	 */
-	/**
-	 * Parse file content.
-	 *
-	 * @param  string  $raw
-	 *
+	 * 解析源文件内容
 	 * @return AutoMakeFileParser|array
 	 */
 	public function parse($raw)
@@ -88,16 +156,6 @@ class AutoMakeFileParser extends CommonParser
 		return $this;
 	}
 
-	protected function setParsed($parsed)
-	{
-		$this->parsed = $parsed;
-	}
-
-	protected function getParsed()
-	{
-		return $this->parsed;
-	}
-
 	/**
 	 * 根据解析结果生成对应的文件
 	 */
@@ -109,6 +167,13 @@ class AutoMakeFileParser extends CommonParser
 		}
 	}
 
+    /**
+     * 生成单个文件
+     * @param $type
+     * @param $intro
+     * @return bool
+     * @todo 将此方法重构为分配到不同的生成器中,尽量一句话
+     */
 	public function makeSingleFile($type, $intro)
 	{
 		$this->setMakeType($type);
@@ -137,55 +202,9 @@ class AutoMakeFileParser extends CommonParser
 		}
 	}
 
-	/* ------------------------------------------------------------------------------------------------
-	 |  Other Functions
-	 | ------------------------------------------------------------------------------------------------
-	 */
-
-	/**
-	 * 要生成的文件类型
-	 * @param $type
-	 */
-	protected function setMakeType($type)
-	{
-		$this->makeType = $type;
-	}
-
-	/**
-	 * 要生成的文件类型
-	 * @param string $type
-	 * @return string
-	 */
-	protected function getMakeType($type = '')
-	{
-		$rst = '';
-		$type = $type ?: $this->makeType;
-		switch ($type){
-			case 'route':
-				$rst = 'Route';
-				break;
-			case 'ctrl':
-				$rst = 'Controller';
-				break;
-			case 'serv':
-				$rst = 'Service';
-				break;
-			case 'res':
-				$rst = 'Repository';
-				break;
-			case 'table':
-				$rst = 'Table';
-				break;
-			case 'model':
-				$rst = 'Model';
-				break;
-		};
-		return $rst;
-	}
-
 	/**
 	 * 生成路由及控制器
-	 * @todo 生成路由暂时忽略
+	 * @todo 生成路由暂时忽略, 此方法改为自定义模板生成，不依赖 Artisan
 	 * @param $intro
 	 * @return bool
 	 */
@@ -224,6 +243,7 @@ class AutoMakeFileParser extends CommonParser
 	 * 生成服务类
 	 * @param $intro
 	 * @return bool
+     * @todo 改为调用服务生成器 ServiceMaker
 	 */
 	private function makeService($intro)
 	{
@@ -274,6 +294,7 @@ class AutoMakeFileParser extends CommonParser
 	 * 生成仓库类
 	 * @param $intro
 	 * @return bool
+     * @todo 改为仓库生成器 RepositoryMaker
 	 */
 	protected function makeRepository($intro)
 	{
@@ -343,6 +364,7 @@ class AutoMakeFileParser extends CommonParser
 	 * 生成与数据表无关的模型类
 	 * @param $intro
 	 * @return bool
+     * @todo 改为模型生成器
 	 */
 	protected function makeModel($intro)
 	{
@@ -356,12 +378,14 @@ class AutoMakeFileParser extends CommonParser
 	 * 生成 Migration
 	 * @param $intro
 	 * @return bool
+     * @todo 改为Migration生成器
 	 */
 	protected function makeMigration($intro)
 	{
-		$tableParsedArray = $this->getModelTableRelation();
-		//todo 生成migration 对接 Maker 中的 migration 生成器
-		//(new AutoMakeMigration())->setRawTxtArray($tableParsedArray)->makeMigration();
+		//$tableParsedArray = $this->getModelTableRelation();
+        //TODO 建议：$migrationParsed = $this->getMigrationParser($this->parsed);
+		//$this->getMigrationMaker()->setRawTxtArray($tableParsedArray)->makeMigration();
+        //TODO 建议：$this->getMigrationMaker()->setParsed($migrationParsed)->make();
 		return true;
 	}
 
@@ -370,6 +394,7 @@ class AutoMakeFileParser extends CommonParser
 	 * @param $realFilePath
 	 * @param $replaceModelArr
 	 * @return bool
+     * @todo 改为表模型生成器
 	 */
 	protected function makeTableModel($realFilePath, $replaceModelArr)
 	{
@@ -403,7 +428,6 @@ class AutoMakeFileParser extends CommonParser
 			return false;
 		}
 
-
 	}
 
 	/**
@@ -412,6 +436,7 @@ class AutoMakeFileParser extends CommonParser
 	 * @param $replaceArr
 	 * @param $type
 	 * @return bool
+     * @todo 替换字符等操作应放置在各自的解析器中，路径应该再生成器中，从解析器中的 getReplaceOption() 中获得需要替换的内容
 	 */
 	protected function replaceStubTags($filePath, $replaceArr, $type = '')
 	{
@@ -426,7 +451,7 @@ class AutoMakeFileParser extends CommonParser
 		);
 		if($this->makeType == 'res'){
 			$modelTableRelation = $this->getModelTableRelation()[$filePathName] ?? [];
-			$baseReplace = $this->getTableEachFieldParse()->replaceTableEach($modelTableRelation, $baseReplace, $type);
+			$baseReplace = $this->getTableParser()->replaceTableEach($modelTableRelation, $baseReplace, $type);
 		}
 
 		return $baseReplace;
@@ -437,6 +462,7 @@ class AutoMakeFileParser extends CommonParser
 	 * @param $rawFileName
 	 * @param string $type
 	 * @return string
+     * @todo 各自的解析器负责组成各自文件的命名空间
 	 */
 	protected function getFileNamespace($rawFileName, $type = '')
 	{
@@ -448,10 +474,10 @@ class AutoMakeFileParser extends CommonParser
 	}
 
 	/**
-	 * Get the destination class path.
-	 *
+	 * 获取真实路径
 	 * @param  string  $name
 	 * @return string
+     * @todo 各自的生成器负责组成各自文件的真实路径
 	 */
 	protected function getPath($name)
 	{
@@ -461,11 +487,11 @@ class AutoMakeFileParser extends CommonParser
 	}
 
 	/**
-	 * Determine if the class already exists.
-	 *
+	 * 检查文件是否存在
 	 * @param  string $rawName
 	 * @param $type
 	 * @return bool
+     * @todo 此处理方法应防止在生成器通用方法类(CommonMaker)中
 	 */
 	protected function alreadyExists($rawName, $type)
 	{
@@ -477,6 +503,7 @@ class AutoMakeFileParser extends CommonParser
 	 * @param $rawName
 	 * @param $type
 	 * @return string
+     * @todo 此方法放置在各自的生成器中
 	 */
 	protected function getNeedMakeFilePath($rawName, $type)
 	{
@@ -484,11 +511,11 @@ class AutoMakeFileParser extends CommonParser
 	}
 
 	/**
-	 * Parse the name and format according to the root namespace.
-	 *
+	 * 根据源文件中的相对命名空间获取完整准确的命名空间
 	 * @param  string $name
 	 * @param string $type
 	 * @return string
+     * @todo 此方法放置在搁置的解析器中
 	 */
 	protected function parseName($name, $type)
 	{
@@ -527,10 +554,10 @@ class AutoMakeFileParser extends CommonParser
 	}
 
 	/**
-	 * Get the controllers namespace for the class.
-	 *
+	 * 获取控制器的根命名空间
 	 * @param  string  $rootNamespace
 	 * @return string
+     * @todo 放置在 Controller 解析器的 getRootNamespace() 中
 	 */
 	protected function getControllersNamespace($rootNamespace)
 	{
@@ -538,10 +565,10 @@ class AutoMakeFileParser extends CommonParser
 	}
 
 	/**
-	 * Get the Repository namespace for the class.
-	 *
+	 * 获取仓库类的根命名空间
 	 * @param  string  $rootNamespace
 	 * @return string
+     * @todo 放置在 Repository 解析器的 getRootNamespace() 中
 	 */
 	protected function getRepositoryNamespace($rootNamespace)
 	{
@@ -549,10 +576,10 @@ class AutoMakeFileParser extends CommonParser
 	}
 
 	/**
-	 * Get the Service namespace for the class.
-	 *
+	 * 获取服务类的根命名空间
 	 * @param  string  $rootNamespace
 	 * @return string
+     * @todo 放置在 Service 解析器的 getRootNamespace() 中
 	 */
 	protected function getServiceNamespace($rootNamespace)
 	{
@@ -560,10 +587,10 @@ class AutoMakeFileParser extends CommonParser
 	}
 
 	/**
-	 * Get the Model namespace for the class.
-	 *
+	 * 获取模型类的根命名空间
 	 * @param  string  $rootNamespace
 	 * @return string
+     * @todo 放置在 Model 解析器的 getRootNamespace() 中
 	 */
 	protected function getModelNamespace($rootNamespace)
 	{
@@ -571,10 +598,7 @@ class AutoMakeFileParser extends CommonParser
 	}
 
 	/**
-	 * Parse raw data.
-	 *
-	 * @param  string  $raw
-	 *
+	 * 初步解析源文件，将解析结果分组
 	 * @return array
 	 */
 	private function parseRawData($raw)
@@ -599,7 +623,8 @@ class AutoMakeFileParser extends CommonParser
 	 * 路由，控制器，仓库，服务
 	 * @param $type
 	 * @param $introRaw
-	 * @return string
+	 * @return mixed
+     * @todo 此方法在入口方法用新的方式实现后就可以删除了
 	 */
 	private function parseIntro($type, $introRaw)
 	{
@@ -625,6 +650,12 @@ class AutoMakeFileParser extends CommonParser
 		}
 	}
 
+    /**
+     * 通过初步分组的解析值再解析出生成路由用的格式化值
+     * @param $introRaw
+     * @return array
+     * @todo 此方法交由 RouteParser 路由解析器类负责
+     */
 	private function parseRouteIntro($introRaw)
 	{
 		$pattern = "/(.*?),/";
@@ -669,6 +700,7 @@ class AutoMakeFileParser extends CommonParser
 	 * 解析出 仓库 相关列表
 	 * @param $introRaw
 	 * @return array
+     * @todo 由仓库类解析器负责
 	 */
 	private function parseResIntro($introRaw)
 	{
@@ -680,6 +712,7 @@ class AutoMakeFileParser extends CommonParser
 	 * 解析 控制器 相关列表
 	 * @param $introRaw
 	 * @return array
+     * @todo 由控制器类解析器负责
 	 */
 	private function parseCtrlIntro($introRaw)
 	{
@@ -690,6 +723,7 @@ class AutoMakeFileParser extends CommonParser
 	 * 解析出 服务 相关列表
 	 * @param $introRaw
 	 * @return array
+     * @todo 由服务类解析器负责
 	 */
 	private function parseServIntro($introRaw)
 	{
@@ -701,6 +735,7 @@ class AutoMakeFileParser extends CommonParser
 	 * 解析出 数据表 相关列表
 	 * @param $introRaw
 	 * @return array
+     * @todo 由表信息解析器负责
 	 */
 	private function parseTableIntro($introRaw)
 	{
@@ -753,12 +788,18 @@ class AutoMakeFileParser extends CommonParser
 	/**
 	 * 数据表解析后，放入到关联关系属性中，以便 res , model 生成循环时调用
 	 * @param $parsedData
+     * @todo 由表信息解析器负责
 	 */
 	protected function setModelTableRelation($parsedData)
 	{
 		$this->modelTableRelation = $parsedData;
 	}
 
+    /**
+     * 获取解析后的表信息格式化值
+     * @return array
+     * @todo 由表信息解析器负责
+     */
 	protected function getModelTableRelation()
 	{
 		return $this->modelTableRelation;

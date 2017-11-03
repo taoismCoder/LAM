@@ -7,13 +7,13 @@ use InvalidArgumentException;
 
 /**
  * usage:
- * 		(new AutoMakeMigration())->setRawJsonFileName('exampleRaw.json')->makeMigration();
- * 		(new AutoMakeMigration())->setRawTxtArray($txtArr)->makeMigration();
+ * 		(new MigrationMaker())->setRawJsonFileName('exampleRaw.json')->makeMigration();
+ * 		(new MigrationMaker())->setRawTxtArray($txtArr)->makeMigration();
  *
- * Class AutoMakeMigration
+ * Class MigrationMaker
  * @package App\Helpers\LAM\Maker
  */
-class AutoMakeMigration {
+class MigrationMaker {
 	/**
 	 * 生成migration数据来源
 	 * json文件 或　txt转化的数组 二选一
@@ -49,7 +49,7 @@ class AutoMakeMigration {
 	protected $rawTxtArray;
 
 	/**
-	 * AutoMakeMigration constructor.
+	 * MigrationMaker constructor.
 	 */
 	public function __construct() {
 	}
