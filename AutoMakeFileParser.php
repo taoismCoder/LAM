@@ -98,6 +98,7 @@ class AutoMakeFileParser extends CommonParser
      * 要生成的文件类型
      * @param string $type
      * @return string
+     * @todo 该方法基本可以废除，由分配方法将解析后的内容分配到各自的生成器和解析器
      */
     protected function getMakeType($type = '')
     {
@@ -158,6 +159,7 @@ class AutoMakeFileParser extends CommonParser
 
 	/**
 	 * 根据解析结果生成对应的文件
+     * @todo 该方法触发所有类型的生成器方法,未来可以改为可选择并可以提示下一步
 	 */
 	public function makeFiles()
 	{
@@ -173,6 +175,7 @@ class AutoMakeFileParser extends CommonParser
      * @param $intro
      * @return bool
      * @todo 将此方法重构为分配到不同的生成器中,尽量一句话
+     * @todo 可以参考 laravel 中登录 $this->guide($guide)->login() 这种
      */
 	public function makeSingleFile($type, $intro)
 	{
