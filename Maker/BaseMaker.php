@@ -13,22 +13,21 @@ interface BaseMaker {
 	public function getStub();
 
 	/**
-	 * 设置模板文件路径
-	 * @param $path
-	 * @return mixed
+	 * 设置由解析器解析的数组
+	 * @param $parsed
+	 * @return self
 	 */
-	public function setStub($path);
+	public function setParsed($parsed);
 
-	/**
-	 * 获取原文
-	 * @return mixed
-	 */
-	public function getRawContents();
+    /**
+     * 获取解析器解析过的数组
+     * @return array
+     */
+    public function getParsed();
 
-	/**
-	 * 设置原文
-	 * @param $raw
-	 * @return mixed
-	 */
-	public function setRawContents($raw);
+    /**
+     * 开始生成文件
+     * @return bool
+     */
+	public function makeFile();
 }

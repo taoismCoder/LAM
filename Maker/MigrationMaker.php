@@ -13,7 +13,7 @@ use InvalidArgumentException;
  * Class MigrationMaker
  * @package App\Helpers\LAM\Maker
  */
-class MigrationMaker {
+class MigrationMaker extends CommonMaker{
 	/**
 	 * 生成migration数据来源
 	 * json文件 或　txt转化的数组 二选一

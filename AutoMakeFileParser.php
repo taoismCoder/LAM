@@ -170,6 +170,42 @@ class AutoMakeFileParser extends CommonParser
 	}
 
     /**
+     * 解析器配置列表
+     * @return array
+     */
+	public function dispatcherConfig($type)
+    {
+        $configList = [
+            'table' => [
+                'parser' => \App\Helpers\LAM\Parser\TableParser::class,
+                'maker' => \App\Helpers\LAM\Maker\TableMaker::class,
+            ],
+            'repository' => [
+                'parser' => \App\Helpers\LAM\Parser\TableParser::class,
+                'maker' => \App\Helpers\LAM\Maker\RepositoryMaker::class
+            ]
+        ];
+        return isset($configList[$type]) ? $configList[$type] : [];
+    }
+
+    /**
+     * 开始执行调度器
+     * @param $type
+     * @param $intro
+     * @return \Illuminate\Foundation\Application|\Taoism\LAM\Maker\BaseMaker
+     */
+	public function dispatcher($type, $intro)
+    {
+        $config = $this->dispatcherConfig($type);
+        if(!empty($config)){
+            // 执行解析器，获取解析结果
+            $parserResult = app($config['parser'])->setRawIntro($intro)->getResult();
+            // 执行生成器，生成文件
+            return app($config['maker'])->setParsed($parserResult)->makeFile();
+        }
+    }
+
+    /**
      * 生成单个文件
      * @param $type
      * @param $intro

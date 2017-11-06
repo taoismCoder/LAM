@@ -6,5 +6,30 @@ namespace Taoism\LAM\Parser;
  * @package Taoism\LAM\Parser
  */
 interface BaseParser {
+    /**
+     * 设置要解析的内容
+     * @param $intro
+     * @return self
+     */
+    public function setRawIntro($intro);
 
+    /**
+     * 获取设置的解析内容
+     * @param $intro
+     * @return mixed
+     */
+    public function getRawIntro($intro);
+
+    /**
+     * 获取解析后的数组
+     * @return array
+     */
+    public function getResult();
+
+    /**
+     * 设置解析后的值
+     * @param $result
+     * @return array
+     */
+    public function setResult($result);
 }

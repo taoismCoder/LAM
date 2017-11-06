@@ -9,6 +9,16 @@ use Taoism\LAM\Parser\BaseParser;
  * @author   Vicleos <510331882@qq.com> https://github.com/taoismCoder/LAM
  */
 class CommonParser implements BaseParser {
+    /**
+     * 要解析的数组
+     * @var array
+     */
+    protected $rawIntro = [];
+    /**
+     * 要返回的解析结果数组
+     * @var array
+     */
+    protected $result = [];
 
 	public function __construct(){}
 
@@ -145,4 +155,43 @@ class CommonParser implements BaseParser {
 		return mb_substr($realPath, 0, strripos($realPath, '/'));
 	}
 
+    /**
+     * 设置要解析的内容
+     * @param $intro
+     * @return self
+     */
+    public function setRawIntro($intro)
+    {
+        $this->rawIntro = $intro;
+        return $this;
+    }
+
+    /**
+     * 获取解析后的数组
+     * @return array
+     */
+    public function getResult()
+    {
+        return $this->result;
+    }
+
+    /**
+     * 设置解析后的值
+     * @param $result
+     * @return array
+     */
+    public function setResult($result)
+    {
+        $this->result = $result;
+    }
+
+    /**
+     * 获取设置的解析内容
+     * @param $intro
+     * @return mixed
+     */
+    public function getRawIntro($intro)
+    {
+        return $this->rawIntro;
+    }
 }
