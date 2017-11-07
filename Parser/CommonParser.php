@@ -9,6 +9,13 @@ use Taoism\LAM\Parser\BaseParser;
  * @author   Vicleos <510331882@qq.com> https://github.com/taoismCoder/LAM
  */
 class CommonParser implements BaseParser {
+
+    /**
+     * 基础模板名称
+     * @var string
+     */
+    protected $baseStubName = '';
+
     /**
      * 要解析的数组
      * @var array
@@ -123,6 +130,17 @@ class CommonParser implements BaseParser {
 		return __DIR__ . '/stubs/' .$type.'.'.$stubType.'.stub';
 	}
 
+    /**
+     * 获取默认模板的内容
+     * @return \PHPUnit_Framework_Constraint_FileExists
+     */
+	protected function getStubContents()
+    {
+        if ($this->baseStubName){
+            return fileExists($this->getStub($this->baseStubName));
+        }
+    }
+
 	/**
 	 * 根据正则匹配对应的结果
 	 * @param string $parseType
@@ -190,7 +208,7 @@ class CommonParser implements BaseParser {
      * @param $intro
      * @return mixed
      */
-    public function getRawIntro($intro)
+    public function getRawIntro()
     {
         return $this->rawIntro;
     }

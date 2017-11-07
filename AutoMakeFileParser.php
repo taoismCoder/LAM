@@ -165,7 +165,8 @@ class AutoMakeFileParser extends CommonParser
 	{
 		$fileParseRst = $this->getParsed();
 		foreach ($fileParseRst as $item){
-			$this->makeSingleFile($item['type'], $item['intro']);
+			//$this->makeSingleFile($item['type'], $item['intro']);
+			$this->dispatcher($item['type'], $item['intro']);
 		}
 	}
 

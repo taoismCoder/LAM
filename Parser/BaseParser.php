@@ -15,10 +15,9 @@ interface BaseParser {
 
     /**
      * 获取设置的解析内容
-     * @param $intro
      * @return mixed
      */
-    public function getRawIntro($intro);
+    public function getRawIntro();
 
     /**
      * 获取解析后的数组
