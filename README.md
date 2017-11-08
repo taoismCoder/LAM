@@ -24,7 +24,7 @@ $rst = (new AutoMakeFileParser())->parse(Storage::get('exampleRaw.txt'))->makeFi
 * release：是相对稳定的最新代码分支，也是LAM对外打包的分支
 * 其它分支：根据开发需要，大的版本会以版本号为分支名，打一些临时分支。
 
-### 最新Release
+### 最新Release (目前正在着手重构代码，未来发布1.0基础版本)
 * [Release](https://github.com/taoismCoder/LAM/releases)
 
 ### 其它LINKS
