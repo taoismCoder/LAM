@@ -1,7 +1,5 @@
-<?php
-namespace App\Helpers\LAM\Parser;
+<?php namespace App\Helpers\LAM\Parser;
 
-use Taoism\LAM\Parser\BaseParser;
 /**
  * Class CommonParser
  * 解析器通用方法
@@ -205,7 +203,6 @@ class CommonParser implements BaseParser {
 
     /**
      * 获取设置的解析内容
-     * @param $intro
      * @return mixed
      */
     public function getRawIntro()

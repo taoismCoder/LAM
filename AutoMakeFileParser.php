@@ -1,8 +1,9 @@
 <?php namespace App\Helpers\LAM;
 
 use Artisan;
-use App\Helpers\LAM\Parser\CommonParser;
 use Illuminate\Support\Str;
+use App\Helpers\LAM\Parser\CommonParser;
+
 /**
  * Class AutoMakeFileParser
  * 生成器入口类
@@ -49,9 +50,28 @@ class AutoMakeFileParser extends CommonParser
 		parent::__construct();
 	}
 
+	/**
+	 * 解析器配置列表
+	 * @return array
+	 */
+	public function dispatcherConfig($type)
+	{
+		$configList = [
+			'table' => [
+				'parser' => Parser\TableParser::class,
+				'maker' => Maker\TableMaker::class,
+			],
+			'repository' => [
+				'parser' => Parser\TableParser::class,
+				'maker' => Maker\RepositoryMaker::class
+			]
+		];
+		return isset($configList[$type]) ? $configList[$type] : [];
+	}
+
     /**
      * 表信息解析器
-     * @return \Illuminate\Foundation\Application|\App\Helpers\LAM\Parser\TableParser
+     * @return \Illuminate\Foundation\Application|Parser\TableParser
      */
     protected function getTableParser()
     {
@@ -171,37 +191,19 @@ class AutoMakeFileParser extends CommonParser
 	}
 
     /**
-     * 解析器配置列表
-     * @return array
-     */
-	public function dispatcherConfig($type)
-    {
-        $configList = [
-            'table' => [
-                'parser' => \App\Helpers\LAM\Parser\TableParser::class,
-                'maker' => \App\Helpers\LAM\Maker\TableMaker::class,
-            ],
-            'repository' => [
-                'parser' => \App\Helpers\LAM\Parser\TableParser::class,
-                'maker' => \App\Helpers\LAM\Maker\RepositoryMaker::class
-            ]
-        ];
-        return isset($configList[$type]) ? $configList[$type] : [];
-    }
-
-    /**
      * 开始执行调度器
      * @param $type
      * @param $intro
-     * @return \Illuminate\Foundation\Application|\Taoism\LAM\Maker\BaseMaker
+     * @return \Illuminate\Foundation\Application|\App\Helpers\LAM\Maker\BaseMaker
      */
 	public function dispatcher($type, $intro)
     {
         $config = $this->dispatcherConfig($type);
         if(!empty($config)){
-            // 执行解析器，获取解析结果
-            $parserResult = app($config['parser'])->setRawIntro($intro)->getResult();
-            // 执行生成器，生成文件
+			// 执行解析器，获取解析结果
+			$parserResult = app($config['parser'])->setRawIntro($intro)->beginParser()->getResult();
+			dd($parserResult);
+			// 执行生成器，生成文件
             return app($config['maker'])->setParsed($parserResult)->makeFile();
         }
     }

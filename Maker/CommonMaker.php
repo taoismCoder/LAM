@@ -1,46 +1,49 @@
-<?php
+<?php namespace App\Helpers\LAM\Maker;
 
-namespace App\Helpers\LAM\Maker;
+/**
+ * Class CommonMaker
+ * ç”Ÿæˆå™¨é€šç”¨æ–¹æ³•
+ * @package  App\Helpers\LAM\Maker
+ * @author   Vicleos <510331882@qq.com> https://github.com/taoismCoder/LAM
+ */
+class CommonMaker implements BaseMaker{
 
-use Taoism\LAM\Maker\BaseMaker;
+	public function __construct(){}
 
-class CommonMaker implements BaseMaker
-{
-    protected $parsed = [];
-    /**
-     * »ñÈ¡Ä£°åÎÄ¼şÂ·¾¶
-     * @return mixed
-     */
-    public function getStub()
-    {
-        // TODO: Implement getStub() method.
-    }
+	/**
+	 * è·å–æ¨¡æ¿æ–‡ä»¶è·¯å¾„
+	 * @return mixed
+	 */
+	public function getStub()
+	{
+		// TODO: Implement getStub() method.
+	}
 
-    /**
-     * ÉèÖÃÓÉ½âÎöÆ÷½âÎöµÄÊı×é
-     * @param $parsed
-     * @return self
-     */
-    public function setParsed($parsed)
-    {
-        $this->parsed = $parsed;
-    }
+	/**
+	 * è®¾ç½®ç”±è§£æå™¨è§£æçš„æ•°ç»„
+	 * @param $parsed
+	 * @return self
+	 */
+	public function setParsed($parsed)
+	{
+		// TODO: Implement setParsed() method.
+	}
 
-    /**
-     * ¿ªÊ¼Éú³ÉÎÄ¼ş
-     * @return bool
-     */
-    public function makeFile()
-    {
-        // TODO: Implement makeFile() method.
-    }
+	/**
+	 * è·å–è§£æå™¨è§£æè¿‡çš„æ•°ç»„
+	 * @return array
+	 */
+	public function getParsed()
+	{
+		// TODO: Implement getParsed() method.
+	}
 
-    /**
-     * »ñÈ¡½âÎöÆ÷½âÎö¹ıµÄÊı×é
-     * @return array
-     */
-    public function getParsed()
-    {
-        return $this->parsed;
-    }
+	/**
+	 * å¼€å§‹ç”Ÿæˆæ–‡ä»¶
+	 * @return bool
+	 */
+	public function makeFile()
+	{
+		// TODO: Implement makeFile() method.
+	}
 }

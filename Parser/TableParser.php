@@ -89,4 +89,11 @@ class TableParser extends CommonParser{
 		// 将所有字段替换为内容模版并输出到内容区间中
 		return $replacedIntro;
 	}
+
+	public function beginParser()
+	{
+		$result = '';
+		$this->setResult($result);
+		return $this;
+	}
 }

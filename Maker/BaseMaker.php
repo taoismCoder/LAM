@@ -1,5 +1,4 @@
-<?php
-namespace Taoism\LAM\Maker;
+<?php namespace App\Helpers\LAM\Maker;
 /**
  * 生成器基础接口
  * Interface BaseMaker
