@@ -42,7 +42,8 @@ $rst = (new AutoMakeFileParser())->parse(Storage::get('exampleRaw.txt'))->makeFi
 ## Contact
 
     @问题反馈   https://github.com/taoismCoder/LAM/issues (推荐)
-    @QQ群 283932057
+    @QQ群      283932057
+    
 ## Contributors List 贡献者
 
 [Contributors Details](https://github.com/taoismCoder/LAM/graphs/contributors)
