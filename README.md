@@ -8,7 +8,7 @@
 ### 我们的目标？
 * 消除码农一切不必要的重复性劳动 XD
 
-### 使用方法：
+### 使用方法：(1.0入口类名会变更，暂时如下)
 ```php
 $rst = (new AutoMakeFileParser())->parse(Storage::get('exampleRaw.txt'))->makeFiles();
 ```
