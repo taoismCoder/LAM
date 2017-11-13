@@ -92,8 +92,31 @@ class TableParser extends CommonParser{
 
 	public function beginParser()
 	{
+        $rawIntro = $this->getRawIntro();
+        // 解析出表数组数据
+        // 得到表名
+        // 生成 Migration 需要的数组结构
+        // 主类中的 dispatcher 会把解析后的数组交由对应的 Maker 类接手处理
 		$result = '';
 		$this->setResult($result);
 		return $this;
 	}
+
+    /**
+     * 获取表名
+     * @return mixed
+     */
+	public function getTableName()
+    {
+        return $this->getTableArray()['name'];
+    }
+
+    /**
+     * 获取表数组
+     * @return array
+     */
+    public function getTableArray()
+    {
+        return [];
+    }
 }
