@@ -125,7 +125,7 @@ class CommonParser implements BaseParser {
 	 */
 	protected function getStub($type, $stubType = 'plain')
 	{
-		return __DIR__ . '/stubs/' .$type.'.'.$stubType.'.stub';
+		return __DIR__ . '/../stubs/' .$type.'.'.$stubType.'.stub';
 	}
 
     /**

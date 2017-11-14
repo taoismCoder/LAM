@@ -92,7 +92,8 @@ class TableParser extends CommonParser{
 
 	public function beginParser()
 	{
-        $rawIntro = $this->getRawIntro();
+		$intro = $this->getRawIntro();
+		dd($intro);
         // 解析出表数组数据
         // 得到表名
         // 生成 Migration 需要的数组结构

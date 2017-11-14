@@ -185,8 +185,8 @@ class AutoMakeFileParser extends CommonParser
 	{
 		$fileParseRst = $this->getParsed();
 		foreach ($fileParseRst as $item){
-			//$this->makeSingleFile($item['type'], $item['intro']);
-			$this->dispatcher($item['type'], $item['intro']);
+			$this->makeSingleFile($item['type'], $item['intro']);
+//			$this->dispatcher($item['type'], $item['intro']);
 		}
 	}
 
@@ -202,7 +202,6 @@ class AutoMakeFileParser extends CommonParser
         if(!empty($config)){
 			// 执行解析器，获取解析结果
 			$parserResult = app($config['parser'])->setRawIntro($intro)->beginParser()->getResult();
-			dd($parserResult);
 			// 执行生成器，生成文件
             return app($config['maker'])->setParsed($parserResult)->makeFile();
         }

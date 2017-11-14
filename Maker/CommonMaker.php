@@ -46,4 +46,14 @@ class CommonMaker implements BaseMaker{
 	{
 		// TODO: Implement makeFile() method.
 	}
+
+	/**
+	 * 检查文件是否存在
+	 * @param  string $rawName
+	 * @return bool
+	 */
+	protected function alreadyExists($rawName)
+	{
+		return file_exists($this->getNeedMakeFilePath($rawName));
+	}
 }
