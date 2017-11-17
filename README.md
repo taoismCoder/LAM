@@ -36,7 +36,7 @@ $rst = (new AutoMakeFileParser())->parse(Storage::get('exampleRaw.txt'))->makeFi
 ## About
 
     @version     v0.0.1
-    @author      @TaoismCoder
+    @author      TaoismCoder
     @license     MIT
 
 ## Contact
