@@ -47,3 +47,9 @@ $rst = (new AutoMakeFileParser())->parse(Storage::get('exampleRaw.txt'))->makeFi
 ## Contributors List 贡献者
 
 [Contributors Details](https://github.com/taoismCoder/LAM/graphs/contributors)
+
+## 新版待定 idea
+- YAML ?
+- Vue2 ?
+- Python 客户端界面 ?
+- composer laravel 模块 ?
