@@ -53,3 +53,6 @@ $rst = (new AutoMakeFileParser())->parse(Storage::get('exampleRaw.txt'))->makeFi
 - Vue2 ?
 - Python 客户端界面 ?
 - composer laravel 模块 ?
+
+## 暂定计划
+- Web在线生成相关代码
