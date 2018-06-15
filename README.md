@@ -56,3 +56,4 @@ $rst = (new AutoMakeFileParser())->parse(Storage::get('exampleRaw.txt'))->makeFi
 
 ## 暂定计划
 - Web在线生成相关代码
+- 基于 vue-electron GUI
